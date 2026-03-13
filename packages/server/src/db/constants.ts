@@ -38,10 +38,11 @@ if (DATABASE_URL) {
 	}
 
 	if (process.env.NODE_ENV === "production") {
-		throw new Error(
-			"DATABASE_URL is required in production. Set it in your app environment (e.g. Railway: dokploy service → Variables → DATABASE_URL from Postgres).",
-		);
+		// Fallback for build-time only (DATABASE_URL is injected at runtime e.g. on Railway).
+		dbUrl =
+			"postgres://dokploy:amukds4wi9001583845717ad2@dokploy-postgres:5432/dokploy";
+	} else {
+		dbUrl =
+			"postgres://dokploy:amukds4wi9001583845717ad2@localhost:5432/dokploy";
 	}
-	dbUrl =
-		"postgres://dokploy:amukds4wi9001583845717ad2@localhost:5432/dokploy";
 }
