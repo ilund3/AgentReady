@@ -32,6 +32,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 # Cloud mode: no Docker/Traefik; dashboard only
 ENV IS_CLOUD=true
+# Avoid JS heap OOM on memory-constrained containers (e.g. Railway)
+ENV NODE_OPTIONS="--max-old-space-size=1536"
 
 COPY --from=build /prod/dokploy/.next ./.next
 COPY --from=build /prod/dokploy/dist ./dist
@@ -45,5 +47,6 @@ COPY --from=build /prod/dokploy/node_modules ./node_modules
 EXPOSE 3000
 
 # Wait for Postgres (Railway injects DATABASE_URL), run migrations, then start server.
-# Set SKIP_WAIT_FOR_POSTGRES=true to skip the wait (e.g. if postgres.railway.internal is slow to resolve).
-CMD ["sh", "-c", "if [ -z \"$SKIP_WAIT_FOR_POSTGRES\" ]; then node -r dotenv/config dist/wait-for-postgres.mjs; fi && node -r dotenv/config dist/migration.mjs && exec node -r dotenv/config dist/server.mjs"]
+# Brief sleep so Railway private network (postgres.railway.internal) is routable before first connection.
+# Set SKIP_WAIT_FOR_POSTGRES=true to skip the wait.
+CMD ["sh", "-c", "if [ -z \"$SKIP_WAIT_FOR_POSTGRES\" ]; then node -r dotenv/config dist/wait-for-postgres.mjs; fi && sleep 5 && node -r dotenv/config dist/migration.mjs && exec node -r dotenv/config dist/server.mjs"]
