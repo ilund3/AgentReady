@@ -3,12 +3,8 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
-// Cloud Postgres (e.g. Railway) requires SSL; longer timeout for private network
-const sql = postgres(dbUrl, {
-	max: 1,
-	connect_timeout: 60,
-	...(process.env.NODE_ENV === "production" && { ssl: true }),
-});
+// Longer connect timeout for cloud Postgres (e.g. Railway private network)
+const sql = postgres(dbUrl, { max: 1, connect_timeout: 60 });
 const db = drizzle(sql);
 
 try {
