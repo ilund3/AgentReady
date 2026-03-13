@@ -31,6 +31,7 @@ Dokploy includes multiple features to make your life easier.
 - **Notifications**: Get notified when your deployments succeed or fail (via Slack, Discord, Telegram, Email, etc.).
 - **Multi Server**: Deploy and manage your applications remotely to external servers.
 - **Self-Hosted**: Self-host Dokploy on your VPS.
+- **MCP Inspector**: Built-in [Model Context Protocol](https://modelcontextprotocol.io) inspector to test and debug MCP servers. Open **MCP Inspector** from the dashboard sidebar to connect to MCP servers via stdio, SSE, or streamable HTTP.
 
 ## 🚀 Getting Started
 
@@ -44,6 +45,15 @@ curl -sSL https://dokploy.com/install.sh | sh
 
 For detailed documentation, visit [docs.dokploy.com](https://docs.dokploy.com).
 
+### MCP Inspector (development)
+
+The dashboard includes an **MCP Inspector** at **Dashboard → MCP Inspector**. It is built from the `apps/inspector-client` app and served at `/inspector/`.
+
+- **Build the Inspector UI** (so it appears at `/inspector/`):  
+  `pnpm run inspector:build`
+- **Run the Inspector proxy** (needed for stdio / local MCP connections):  
+  `pnpm run inspector-server:dev`  
+  The proxy runs on port 6277; the Inspector UI in the dashboard will use it when connecting to local/stdio MCP servers.
 
 [Github Sponsors](https://github.com/sponsors/Siumauricio)
 

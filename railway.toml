@@ -1,0 +1,15 @@
+# Railway deployment config for AgentReady/Dokploy (cloud mode).
+# 1. Connect this repo in Railway and add a Postgres plugin (Railway provides DATABASE_URL).
+# 2. Set the variables listed in scripts/railway-setup.env.example in the Railway dashboard (or via CLI).
+# 3. Deploy; the Dockerfile.railway build will run and start the app.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.railway"
+
+[deploy]
+# App needs time for: wait-for-postgres, migrations, then server boot (often 60–90s on first deploy)
+healthcheckPath = "/api/health"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

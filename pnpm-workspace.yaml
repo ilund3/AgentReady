@@ -1,7 +1,10 @@
 packages:
   - "apps/api"
   - "apps/dokploy"
+  - "apps/inspector-client"
+  - "apps/inspector-server"
   - "apps/schedules"
+  - "packages/inspector-cli"
   - "packages/server"
 
 

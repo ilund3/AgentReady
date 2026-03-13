@@ -226,6 +226,12 @@ const MENU: Menu = {
 					!isCloud
 				),
 		},
+		{
+			isSingle: true,
+			title: "MCP Inspector",
+			url: "/dashboard/inspector",
+			icon: BotIcon,
+		},
 
 		// Legacy unused menu, adjusted to the new structure
 		// {

@@ -27,16 +27,22 @@ export const AddGithubProvider = () => {
 	const randomString = () => Math.random().toString(36).slice(2, 8);
 
 	useEffect(() => {
-		const url = document.location.origin;
+		// GitHub requires webhook URL to be reachable from the public internet (no localhost).
+		// Set NEXT_PUBLIC_APP_URL to your public URL (e.g. https://your-domain.com or an ngrok/localtunnel URL for local dev).
+		const baseUrl =
+			typeof process.env.NEXT_PUBLIC_APP_URL === "string" &&
+			process.env.NEXT_PUBLIC_APP_URL.trim() !== ""
+				? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")
+				: document.location.origin;
 		const manifest = JSON.stringify(
 			{
-				redirect_url: `${origin}/api/providers/github/setup?organizationId=${activeOrganization?.id ?? ""}&userId=${session?.user?.id ?? ""}`,
+				redirect_url: `${baseUrl}/api/providers/github/setup?organizationId=${activeOrganization?.id ?? ""}&userId=${session?.user?.id ?? ""}`,
 				name: `Dokploy-${format(new Date(), "yyyy-MM-dd")}-${randomString()}`,
-				url: origin,
+				url: baseUrl,
 				hook_attributes: {
-					url: `${url}/api/deploy/github`,
+					url: `${baseUrl}/api/deploy/github`,
 				},
-				callback_urls: [`${origin}/api/providers/github/setup`],
+				callback_urls: [`${baseUrl}/api/providers/github/setup`],
 				public: false,
 				request_oauth_on_install: true,
 				default_permissions: {
@@ -78,6 +84,17 @@ export const AddGithubProvider = () => {
 								straightforward and only takes a few minutes. Click the button
 								below to get started.
 							</p>
+							{typeof window !== "undefined" &&
+								(document.location.origin.startsWith("http://localhost") ||
+									document.location.origin.startsWith("http://127.0.0.1")) &&
+								!process.env.NEXT_PUBLIC_APP_URL && (
+									<p className="text-amber-600 dark:text-amber-500 text-sm">
+										GitHub requires webhook URLs to be reachable from the
+										internet. Set <code className="rounded bg-muted px-1">NEXT_PUBLIC_APP_URL</code> in
+										your env to a public URL (e.g. ngrok or your deployed domain),
+										then restart the app.
+									</p>
+								)}
 							<div className="mt-4 flex flex-col gap-4">
 								<div className="flex flex-row gap-4">
 									<span>Organization?</span>

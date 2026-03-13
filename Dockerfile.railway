@@ -1,0 +1,48 @@
+# Railway-optimized Dockerfile: builds and runs the Dokploy app only (no Docker-in-Docker).
+# Set IS_CLOUD=true so the app runs in cloud mode (dashboard only, no local Docker orchestration).
+# Requires: DATABASE_URL (from Railway Postgres), PORT (set by Railway).
+
+FROM node:24.4.0-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
+
+FROM base AS build
+WORKDIR /usr/src/app
+COPY . .
+
+RUN apt-get update && apt-get install -y python3 make g++ git pkg-config libsecret-1-dev && rm -rf /var/lib/apt/lists/*
+
+RUN pnpm install --frozen-lockfile
+
+ENV NODE_ENV=production
+RUN pnpm --filter=@dokploy/server build
+RUN pnpm --filter=./apps/dokploy run build
+# Build MCP Inspector UI into dokploy public so /inspector/ is served
+RUN pnpm --filter=@modelcontextprotocol/inspector-client run build 2>/dev/null || true
+
+RUN pnpm --filter=./apps/dokploy --prod deploy --legacy /prod/dokploy
+RUN cp -R apps/dokploy/.next /prod/dokploy/.next
+RUN cp -R apps/dokploy/dist /prod/dokploy/dist
+RUN cp -R apps/dokploy/public /prod/dokploy/public
+
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+# Cloud mode: no Docker/Traefik; dashboard only
+ENV IS_CLOUD=true
+
+COPY --from=build /prod/dokploy/.next ./.next
+COPY --from=build /prod/dokploy/dist ./dist
+COPY --from=build /prod/dokploy/next.config.mjs ./
+COPY --from=build /prod/dokploy/public ./public
+COPY --from=build /prod/dokploy/package.json ./
+COPY --from=build /prod/dokploy/drizzle ./drizzle
+COPY --from=build /prod/dokploy/components.json ./
+COPY --from=build /prod/dokploy/node_modules ./node_modules
+
+EXPOSE 3000
+
+# Wait for Postgres (Railway injects DATABASE_URL), run migrations, then start server
+CMD ["sh", "-c", "node -r dotenv/config dist/wait-for-postgres.mjs && node -r dotenv/config dist/migration.mjs && exec node -r dotenv/config dist/server.mjs"]
