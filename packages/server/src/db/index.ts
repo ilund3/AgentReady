@@ -19,7 +19,10 @@ const globalForDb = globalThis as unknown as {
 
 let dbConnection: Database;
 
-const postgresOptions = { connect_timeout: 60 };
+const postgresOptions = {
+	connect_timeout: 60,
+	...(process.env.NODE_ENV === "production" && { ssl: true }),
+};
 if (process.env.NODE_ENV === "production") {
 	// En producción no usamos global cache
 	dbConnection = drizzle(postgres(dbUrl, postgresOptions), {
