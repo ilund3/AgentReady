@@ -37,7 +37,7 @@ export const AddGithubProvider = () => {
 		const manifest = JSON.stringify(
 			{
 				redirect_url: `${baseUrl}/api/providers/github/setup?organizationId=${activeOrganization?.id ?? ""}&userId=${session?.user?.id ?? ""}`,
-				name: `Dokploy-${format(new Date(), "yyyy-MM-dd")}-${randomString()}`,
+				name: `AgentReady-${format(new Date(), "yyyy-MM-dd")}-${randomString()}`,
 				url: baseUrl,
 				hook_attributes: {
 					url: `${baseUrl}/api/deploy/github`,

@@ -6,6 +6,7 @@ import {
 	Bell,
 	BlocksIcon,
 	BookIcon,
+	BookOpen,
 	BotIcon,
 	Boxes,
 	ChevronRight,
@@ -232,6 +233,12 @@ const MENU: Menu = {
 			url: "/dashboard/inspector",
 			icon: BotIcon,
 		},
+		{
+			isSingle: true,
+			title: "Skill Inspector",
+			url: "/dashboard/skill-inspector",
+			icon: BookOpen,
+		},
 
 		// Legacy unused menu, adjusted to the new structure
 		// {
@@ -442,7 +449,7 @@ const MENU: Menu = {
 	help: [
 		{
 			name: "Documentation",
-			url: "https://docs.dokploy.com/docs/core",
+			url: "https://docs.agentready.com/docs/core",
 			icon: BookIcon,
 		},
 		{

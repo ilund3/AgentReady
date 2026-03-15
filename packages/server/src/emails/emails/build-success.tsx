@@ -23,10 +23,10 @@ export type TemplateProps = {
 };
 
 export const BuildSuccessEmail = ({
-	projectName = "dokploy",
+	projectName = "AgentReady",
 	applicationName = "frontend",
 	applicationType = "application",
-	buildLink = "https://dokploy.com/projects/dokploy-test/applications/dokploy-test",
+	buildLink = "https://agentready.com/projects/agentready-test/applications/agentready-test",
 	date = "2023-05-01T00:00:00.000Z",
 	environmentName = "production",
 }: TemplateProps) => {
@@ -55,7 +55,7 @@ export const BuildSuccessEmail = ({
 								}
 								width="100"
 								height="50"
-								alt="Dokploy"
+								alt="AgentReady"
 								className="my-0 mx-auto"
 							/>
 						</Section>

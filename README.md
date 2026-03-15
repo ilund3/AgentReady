@@ -45,15 +45,14 @@ curl -sSL https://dokploy.com/install.sh | sh
 
 For detailed documentation, visit [docs.dokploy.com](https://docs.dokploy.com).
 
-### MCP Inspector (development)
+### MCP Inspector
 
-The dashboard includes an **MCP Inspector** at **Dashboard → MCP Inspector**. It is built from the `apps/inspector-client` app and served at `/inspector/`.
+The dashboard includes an **MCP Inspector** at **Dashboard → MCP Inspector**. It is fully integrated into the same app (no iframe): the Inspector UI lives in `apps/dokploy/inspector/` and is rendered as part of the Dokploy dashboard.
 
-- **Build the Inspector UI** (so it appears at `/inspector/`):  
-  `pnpm run inspector:build`
-- **Run the Inspector proxy** (needed for stdio / local MCP connections):  
+- **Run the app** with `pnpm run dokploy:dev` (from repo root); open **MCP Inspector** from the sidebar.
+- **For stdio / local MCP connections**, run the Inspector proxy in a separate terminal:  
   `pnpm run inspector-server:dev`  
-  The proxy runs on port 6277; the Inspector UI in the dashboard will use it when connecting to local/stdio MCP servers.
+  The proxy runs on port 6277; the Inspector will use it when connecting to local/stdio MCP servers.
 
 [Github Sponsors](https://github.com/sponsors/Siumauricio)
 

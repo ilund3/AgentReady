@@ -1,4 +1,6 @@
 import "@/styles/globals.css";
+// MCP Inspector styles (global CSS must be imported from _app)
+import "@inspector/App.css";
 
 import type { NextPage } from "next";
 import type { AppProps } from "next/app";
