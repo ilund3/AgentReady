@@ -7,13 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -60,7 +53,6 @@ function buildSkillMd(state: SkillState): string {
 interface SkillState {
 	name: string;
 	description: string;
-	category: string;
 	license: string;
 	compatibility: string;
 	metadataAuthor: string;
@@ -72,7 +64,6 @@ interface SkillState {
 const INITIAL_STATE: SkillState = {
 	name: "",
 	description: "",
-	category: "workflow",
 	license: "",
 	compatibility: "",
 	metadataAuthor: "",
@@ -208,19 +199,6 @@ export function SkillInspectorView() {
 									{state.description.length > MAX_DESCRIPTION_LENGTH && (
 										<p className="text-xs text-destructive">{state.description.length} / {MAX_DESCRIPTION_LENGTH}</p>
 									)}
-								</div>
-								<div className="space-y-2">
-									<Label>Category</Label>
-									<Select value={state.category} onValueChange={(v) => update("category", v)}>
-										<SelectTrigger>
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="document">Document &amp; Asset Creation</SelectItem>
-											<SelectItem value="workflow">Workflow Automation</SelectItem>
-											<SelectItem value="mcp">MCP Enhancement</SelectItem>
-										</SelectContent>
-									</Select>
 								</div>
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 									<div className="space-y-2">
