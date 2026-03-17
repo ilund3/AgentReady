@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,13 +25,43 @@ import {
 	ChevronDown,
 	ChevronRight,
 } from "lucide-react";
+import JSZip from "jszip";
 import { toast } from "sonner";
 import { Dropzone } from "@/components/ui/dropzone";
 import { api } from "@/utils/api";
+import { buildTelemetryShimJs } from "@/lib/agentready-telemetry-shim";
+import Link from "next/link";
 
 const KEBAB_REGEX = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX_DESCRIPTION_LENGTH = 1024;
 const RESERVED_NAMES = ["claude", "anthropic"];
+
+function buildPluginIndexJs(pluginId: string): string {
+	return `"use strict";
+
+/**
+ * OpenClaw plugin entry + AgentReady analytics.
+ * Wraps api.registerHook so the telemetry script's hook registrations
+ * include a name (required by OpenClaw), then runs the telemetry install.
+ */
+const telemetry = require("./agentready-telemetry");
+
+function register(api) {
+  if (typeof api.registerHook !== "function") return;
+
+  const wrappedApi = { ...api };
+  wrappedApi.registerHook = function (events, handler, opts) {
+    const eventName = Array.isArray(events) ? events[0] : events;
+    const name = (opts && opts.name) || "${pluginId}-analytics." + (eventName || "hook");
+    return api.registerHook(events, handler, { ...opts, name });
+  };
+
+  telemetry.install(wrappedApi);
+}
+
+module.exports = { register };
+`;
+}
 
 function toKebab(s: string): string {
 	return s
@@ -127,9 +158,14 @@ function AnalyticsRegistrationRow({
 	onRemove: () => void;
 	removePending: boolean;
 }) {
+	const [detailsOpen, setDetailsOpen] = useState(false);
 	const { data: summary, isLoading } = api.skillAnalytics.getSummary.useQuery(
 		{ trackingId },
 		{ enabled: !!trackingId },
+	);
+	const { data: recentData, isLoading: recentLoading } = api.skillAnalytics.recentEvents.useQuery(
+		{ trackingId, limit: 50 },
+		{ enabled: detailsOpen && !!trackingId },
 	);
 	return (
 		<li className="flex flex-col gap-2 rounded-md border bg-muted/20 px-3 py-2 text-sm">
@@ -143,7 +179,13 @@ function AnalyticsRegistrationRow({
 						</Badge>
 					)}
 				</div>
-				<div className="flex items-center gap-2 shrink-0">
+				<div className="flex items-center gap-2 shrink-0 flex-wrap">
+					<Button variant="outline" size="sm" className="h-7 text-xs" asChild>
+						<Link href={`/dashboard/skill-analytics/${encodeURIComponent(trackingId)}`}>
+							<BarChart3 className="h-3.5 w-3.5 mr-1" />
+							Dashboard
+						</Link>
+					</Button>
 					<span className="text-xs text-muted-foreground font-mono">{trackingId}</span>
 					{createdAt != null && (
 						<time className="text-xs text-muted-foreground" dateTime={new Date(createdAt).toISOString()}>
@@ -166,15 +208,77 @@ function AnalyticsRegistrationRow({
 			{isLoading ? (
 				<p className="text-xs text-muted-foreground">Loading analytics…</p>
 			) : summary ? (
-				<div className="flex flex-wrap gap-2 text-xs">
-					<span className="text-muted-foreground">
-						Total events: <strong>{summary.totalEvents}</strong>
-					</span>
-					{Object.entries(summary.byEventType).map(([type, count]) => (
-						<Badge key={type} variant="outline">
-							{type}: {count}
-						</Badge>
-					))}
+				<div className="space-y-2">
+					<div className="flex flex-wrap gap-2 text-xs">
+						<span className="text-muted-foreground">
+							Total events: <strong>{summary.totalEvents}</strong>
+						</span>
+						{Object.entries(summary.byEventType).map(([type, count]) => (
+							<Badge key={type} variant="outline">
+								{type}: {count}
+							</Badge>
+						))}
+					</div>
+					<p className="text-[11px] text-muted-foreground leading-snug">
+						Counts are OpenClaw hook fires (e.g. <code className="bg-muted px-0.5 rounded">message_received</code>,{" "}
+						<code className="bg-muted px-0.5 rounded">agent_end</code>) — not “skill reads” per se.
+					</p>
+					<Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+						<CollapsibleTrigger asChild>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
+							>
+								{detailsOpen ? (
+									<ChevronDown className="h-3.5 w-3.5" />
+								) : (
+									<ChevronRight className="h-3.5 w-3.5" />
+								)}
+								Show last 50 events
+							</Button>
+						</CollapsibleTrigger>
+						<CollapsibleContent className="pt-2 pb-1">
+							{recentLoading ? (
+								<p className="text-xs text-muted-foreground">Loading events…</p>
+							) : !recentData?.events.length ? (
+								<p className="text-xs text-muted-foreground max-w-xl">
+									No events in the database for this registration. Use the trackable zip from this tab, install it in
+									OpenClaw, restart the gateway, and send traffic through a channel (e.g. Telegram). If counts stay at
+									0, check <code className="bg-muted px-0.5 rounded">agentready-analytics.json</code> points at this
+									AgentReady URL (reachable from the machine running OpenClaw).
+								</p>
+							) : (
+								<div className="max-h-72 overflow-auto rounded-md border bg-background">
+									<table className="w-full text-left text-xs">
+										<thead className="sticky top-0 bg-muted/80 border-b">
+											<tr>
+												<th className="p-2 font-medium">Time</th>
+												<th className="p-2 font-medium">Type</th>
+												<th className="p-2 font-medium">Payload</th>
+											</tr>
+										</thead>
+										<tbody>
+											{recentData.events.map((ev) => (
+												<tr key={ev.id} className="border-b border-border/50 align-top">
+													<td className="p-2 whitespace-nowrap text-muted-foreground font-mono">
+														{ev.createdAt ? new Date(ev.createdAt).toLocaleString() : "—"}
+													</td>
+													<td className="p-2 font-mono">{ev.eventType}</td>
+													<td className="p-2 font-mono text-[10px] break-all max-w-[200px] sm:max-w-xs">
+														{ev.payload != null
+															? JSON.stringify(ev.payload)
+															: "—"}
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</div>
+							)}
+						</CollapsibleContent>
+					</Collapsible>
 				</div>
 			) : null}
 		</li>
@@ -241,16 +345,60 @@ export function SkillInspectorView() {
 
 	const fullSkillMd = useMemo(() => buildSkillMd(state), [state]);
 
-	const handleDownload = useCallback(() => {
-		const blob = new Blob([fullSkillMd], { type: "text/markdown" });
+	const handleDownload = useCallback(async () => {
+		const zip = new JSZip();
+		const folder = zip.folder(suggestedName);
+		if (!folder) {
+			toast.error("Failed to create zip");
+			return;
+		}
+		// OpenClaw plugin layout: one top-level dir, manifest, index.js, package.json (name = id), skills in skills/<id>/
+		folder.file(`skills/${suggestedName}/SKILL.md`, fullSkillMd);
+		folder.file(
+			"openclaw.plugin.json",
+			JSON.stringify(
+				{
+					id: suggestedName,
+					name: state.name?.trim() || suggestedName,
+					version: "1.0.0",
+					description: state.description?.trim() || "Skill created with Skill Inspector.",
+					configSchema: {},
+					skills: [`./skills/${suggestedName}`],
+				},
+				null,
+				2,
+			),
+		);
+		folder.file("index.js", buildPluginIndexJs(suggestedName));
+		folder.file(
+			"package.json",
+			JSON.stringify(
+				{
+					name: suggestedName,
+					version: "1.0.0",
+					openclaw: { extensions: ["./index.js"] },
+				},
+				null,
+				2,
+			),
+		);
+		folder.file(
+			"agentready-analytics.json",
+			JSON.stringify({ trackingId: "", endpointBaseUrl: "" }, null, 2),
+		);
+		folder.file("agentready-telemetry.js", buildTelemetryShimJs(suggestedName));
+		folder.file("scripts/.gitkeep", "");
+		folder.file("references/.gitkeep", "");
+		folder.file("assets/.gitkeep", "");
+		const blob = await zip.generateAsync({ type: "blob" });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement("a");
 		a.href = url;
-		a.download = "SKILL.md";
+		a.download = `${suggestedName}.zip`;
 		a.click();
 		URL.revokeObjectURL(url);
-		toast.success("SKILL.md downloaded");
-	}, [fullSkillMd]);
+		toast.success("ZIP downloaded");
+	}, [fullSkillMd, suggestedName, state.name, state.description]);
 
 	const handleAnalyticsZip = useCallback(
 		async (files: FileList | null) => {
@@ -529,19 +677,26 @@ export function SkillInspectorView() {
 							<CardHeader>
 								<CardTitle className="text-base">Export</CardTitle>
 								<p className="text-sm text-muted-foreground">
-									Download SKILL.md and place it in a folder named like your skill (kebab-case). Add scripts/, references/, assets/ as needed.
+									Download a full OpenClaw plugin ZIP (manifest, entry point, package.json, skill path). Install with{" "}
+									<code className="text-xs bg-muted px-1 rounded">openclaw plugins install &lt;file.zip&gt;</code> or register in the Analytics tab for tracking.
 								</p>
 							</CardHeader>
 							<CardContent className="space-y-3">
 								<div className="flex flex-wrap gap-2">
-									<Button onClick={handleDownload} disabled={!state.name} size="sm">
+									<Button onClick={() => void handleDownload()} disabled={!state.name} size="sm">
 										<Download className="h-4 w-4 mr-2" />
-										Download SKILL.md
+										Download ZIP
 									</Button>
 								</div>
 								<div className="rounded-md border bg-muted/30 p-3 font-mono text-xs overflow-x-auto">
-									<pre className="whitespace-pre-wrap break-words">{`${state.name || "your-skill-name"}/
-├── SKILL.md
+									<pre className="whitespace-pre-wrap break-words">{`${suggestedName}/
+├── openclaw.plugin.json
+├── package.json          (name = "${suggestedName}")
+├── index.js
+├── agentready-analytics.json
+├── agentready-telemetry.js
+├── skills/${suggestedName}/
+│   └── SKILL.md
 ├── scripts/     (optional)
 ├── references/  (optional)
 └── assets/      (optional)`}</pre>
@@ -551,7 +706,7 @@ export function SkillInspectorView() {
 									<pre className="p-3 text-xs overflow-auto max-h-64 whitespace-pre-wrap break-words border-t">{fullSkillMd}</pre>
 								</details>
 								<p className="text-xs text-muted-foreground">
-									To distribute: zip the skill folder and upload to Claude.ai via Settings → Capabilities → Skills, or place in Claude Code skills directory.
+									Add the plugin id to <code className="bg-muted px-1 rounded">plugins.allow</code> in OpenClaw config, then restart the gateway.
 								</p>
 							</CardContent>
 						</Card>

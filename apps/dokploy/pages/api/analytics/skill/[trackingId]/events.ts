@@ -49,6 +49,16 @@ export default async function handler(
 		return res.status(200).json({ accepted: 0 });
 	}
 
+	if (process.env.AGENTREADY_SKILL_ANALYTICS_LOG === "1") {
+		// eslint-disable-next-line no-console
+		console.log(
+			"[skill-analytics] ingest",
+			trackingId,
+			events.length,
+			events.map((e) => e.eventType).join(","),
+		);
+	}
+
 	await db.insert(skillAnalyticsEvents).values(
 		events.map((e) => ({
 			trackingId,

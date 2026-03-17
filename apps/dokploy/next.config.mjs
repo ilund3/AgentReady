@@ -8,9 +8,15 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+/** Monorepo root (AgentReady) so Turbopack doesn’t pick ~/package-lock.json as workspace root. */
+const monorepoRoot = path.join(__dirname, "..", "..");
+
 /** @type {import("next").NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
+	turbopack: {
+		root: monorepoRoot,
+	},
 	typescript: {
 		ignoreBuildErrors: true,
 	},
