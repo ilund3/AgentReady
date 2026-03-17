@@ -5,8 +5,8 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 /** Resolve AgentReady repo root (directory that contains both "apps" and "packages"). */
-function getRepoRoot(): string | null {
-	let dir = __dirname;
+function findRepoRoot(startDir: string): string | null {
+	let dir = path.resolve(startDir);
 	for (let i = 0; i < 10; i++) {
 		const appsDir = path.join(dir, "apps");
 		const packagesDir = path.join(dir, "packages");
@@ -18,27 +18,52 @@ function getRepoRoot(): string | null {
 	return null;
 }
 
-/** Load OPENAI_API_KEY from the main repo .env (AgentReady/.env) when not already set. */
-function ensureOpenAIEnv(): void {
-	if (process.env.OPENAI_API_KEY) return;
-	const root = getRepoRoot();
-	if (!root) return;
-	const envPath = path.join(root, ".env");
+function readOpenAIKeyFromEnvFile(envPath: string): string | null {
 	try {
-		if (!fs.existsSync(envPath)) return;
+		if (!fs.existsSync(envPath)) return null;
 		const content = fs.readFileSync(envPath, "utf-8");
 		for (const line of content.split("\n")) {
 			const match = line.match(/^\s*OPENAI_API_KEY\s*=\s*(.+)$/);
 			if (match) {
 				const value = match[1]!.trim().replace(/^["']|["']$/g, "");
-				if (value) {
-					process.env.OPENAI_API_KEY = value;
-					return;
-				}
+				if (value) return value;
 			}
 		}
 	} catch {
 		// ignore
+	}
+	return null;
+}
+
+/** Load OPENAI_API_KEY from the main repo .env (AgentReady/.env) when not already set. */
+function ensureOpenAIEnv(): void {
+	if (process.env.OPENAI_API_KEY) return;
+	// 1) Repo root by walking up from __dirname (source layout)
+	const rootFromDirname = findRepoRoot(__dirname);
+	if (rootFromDirname) {
+		const value = readOpenAIKeyFromEnvFile(path.join(rootFromDirname, ".env"));
+		if (value) {
+			process.env.OPENAI_API_KEY = value;
+			return;
+		}
+	}
+	// 2) Repo root by walking up from process.cwd() (e.g. server started from apps/dokploy or AgentReady)
+	const rootFromCwd = findRepoRoot(process.cwd());
+	if (rootFromCwd) {
+		const value = readOpenAIKeyFromEnvFile(path.join(rootFromCwd, ".env"));
+		if (value) {
+			process.env.OPENAI_API_KEY = value;
+			return;
+		}
+	}
+	// 3) Common relative paths when cwd is apps/dokploy: ../../.env = AgentReady/.env
+	const cwd = process.cwd();
+	for (const rel of [".env", path.join("..", ".env"), path.join("..", "..", ".env")]) {
+		const value = readOpenAIKeyFromEnvFile(path.join(cwd, rel));
+		if (value) {
+			process.env.OPENAI_API_KEY = value;
+			return;
+		}
 	}
 }
 
