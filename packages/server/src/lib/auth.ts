@@ -75,7 +75,12 @@ const { handler, api } = betterAuth({
 	},
 	async trustedOrigins() {
 		if (IS_CLOUD) {
-			return getTrustedOrigins();
+			const fromDb = await getTrustedOrigins();
+			// Enterprise SSO UI (trusted origins in DB) is license-gated; cloud OAuth
+			// still needs the public app URL trusted. Merge env + DB.
+			const base = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/+$/, "");
+			const fromEnv = base ? [base] : [];
+			return Array.from(new Set([...fromEnv, ...fromDb]));
 		}
 		const [trustedOrigins, settings] = await Promise.all([
 			getTrustedOrigins(),

@@ -1,13 +1,11 @@
 import AdmZip from "adm-zip";
 
 /** OpenClaw telemetry shim source (inlined so Next/Turbopack never resolves a sibling .js path). */
-export function buildTelemetryShimJs(pluginId: string): string {
-	const safeId = pluginId.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+export function buildTelemetryShimJs(_pluginId: string): string {
 	return `
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const HOOK_PREFIX = "${safeId}-analytics.";
 const DEBUG = process.env.AGENTREADY_ANALYTICS_DEBUG === "1" || process.env.AGENTREADY_ANALYTICS_DEBUG === "true";
 
 function loadConfig() {
@@ -64,6 +62,10 @@ function buildPayload(hookName, ev, ctx) {
     } else if (hookName === "after_compaction") {
       p.compactedCount = ev.compactedCount;
       p.postCompactionMessages = ev.messageCount;
+    } else if (hookName === "before_model_resolve") {
+      p.promptLen = typeof ev.prompt === "string" ? ev.prompt.length : undefined;
+    } else if (hookName === "before_agent_start") {
+      p.promptLen = typeof ev.prompt === "string" ? ev.prompt.length : undefined;
     } else if (hookName === "before_prompt_build") {
       p.channel = ctx.channelId;
       p.sessionKey = trimKey(ctx.sessionKey, 80);
@@ -97,7 +99,13 @@ function send(config, eventType, payload) {
     });
 }
 
+// Typed hook names (PluginHookName). MUST use api.on — OpenClaw runs these via HookRunner + typedHooks.
+// api.registerHook only wires registerInternalHook("message_received", …) which never matches
+// triggerInternalHook's "message:received"; agent_end etc. only fire for api.on registrations.
 var HOOKS = [
+  "before_model_resolve",
+  "before_agent_start",
+  "before_prompt_build",
   "message_received",
   "message_sending",
   "message_sent",
@@ -108,34 +116,37 @@ var HOOKS = [
   "session_end",
   "before_compaction",
   "after_compaction",
-  "before_prompt_build",
   "gateway_start",
   "gateway_stop",
 ];
 
 function install(api) {
-  if (typeof api.registerHook !== "function") return;
+  if (typeof api.on !== "function") {
+    if (DEBUG) console.warn("[agentready-analytics] api.on unavailable; need OpenClaw typed hooks");
+    return;
+  }
   var config = loadConfig();
   if (!config) {
     if (DEBUG) console.warn("[agentready-analytics] missing or invalid agentready-analytics.json");
     return;
   }
+  var PRIORITY = -9999;
   for (var i = 0; i < HOOKS.length; i++) {
     (function (hookName) {
       try {
-        api.registerHook(
+        api.on(
           hookName,
           function (ev, ctx) {
             send(config, hookName, buildPayload(hookName, ev, ctx));
           },
-          { optional: true, name: HOOK_PREFIX + hookName },
+          { priority: PRIORITY },
         );
       } catch (e) {
-        if (DEBUG) console.warn("[agentready-analytics] registerHook failed", hookName, e && e.message);
+        if (DEBUG) console.warn("[agentready-analytics] api.on failed", hookName, e && e.message);
       }
     })(HOOKS[i]);
   }
-  if (DEBUG) console.warn("[agentready-analytics] registered", HOOKS.length, "hooks for tracking", config.trackingId.slice(0, 8) + "…");
+  if (DEBUG) console.warn("[agentready-analytics] registered", HOOKS.length, "typed hooks for tracking", config.trackingId.slice(0, 8) + "…");
 }
 
 module.exports = { install };
