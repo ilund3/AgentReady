@@ -32,6 +32,8 @@ import { previewDeploymentRouter } from "./routers/preview-deployment";
 import { projectRouter } from "./routers/project";
 import { redirectsRouter } from "./routers/redirects";
 import { redisRouter } from "./routers/redis";
+import { skillAnalyticsRouter } from "./routers/skill-analytics";
+import { skillCreatorRouter } from "./routers/skill-creator";
 import { registryRouter } from "./routers/registry";
 import { rollbackRouter } from "./routers/rollbacks";
 import { scheduleRouter } from "./routers/schedule";
@@ -72,6 +74,8 @@ export const appRouter = createTRPCRouter({
 	security: securityRouter,
 	redirects: redirectsRouter,
 	port: portRouter,
+	skillAnalytics: skillAnalyticsRouter,
+	skillCreator: skillCreatorRouter,
 	registry: registryRouter,
 	cluster: clusterRouter,
 	notification: notificationRouter,

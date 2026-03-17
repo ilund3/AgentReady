@@ -117,6 +117,7 @@ export * from "./utils/providers/gitlab";
 export * from "./utils/providers/raw";
 export * from "./utils/schedules/index";
 export * from "./utils/schedules/utils";
+export * from "./utils/skill-analytics/rebundle-zip";
 export * from "./utils/servers/remote-docker";
 export * from "./utils/startup/cancell-deployments";
 export * from "./utils/tracking/hubspot";

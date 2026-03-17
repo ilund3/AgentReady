@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,16 @@ import {
 	AlertCircle,
 	FileCode,
 	ListChecks,
+	BarChart3,
+	FileArchive,
+	Trash2,
+	Sparkles,
+	ChevronDown,
+	ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Dropzone } from "@/components/ui/dropzone";
+import { api } from "@/utils/api";
 
 const KEBAB_REGEX = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX_DESCRIPTION_LENGTH = 1024;
@@ -104,9 +112,119 @@ const CHECKLIST_ITEMS = [
 	{ id: "instructions-clear", label: "Instructions are clear and actionable", check: (s: SkillState) => (s.body?.length ?? 0) > 50 },
 ] as const;
 
+function AnalyticsRegistrationRow({
+	trackingId,
+	name,
+	pluginId,
+	createdAt,
+	onRemove,
+	removePending,
+}: {
+	trackingId: string;
+	name: string;
+	pluginId: string | null;
+	createdAt: Date | string | null;
+	onRemove: () => void;
+	removePending: boolean;
+}) {
+	const { data: summary, isLoading } = api.skillAnalytics.getSummary.useQuery(
+		{ trackingId },
+		{ enabled: !!trackingId },
+	);
+	return (
+		<li className="flex flex-col gap-2 rounded-md border bg-muted/20 px-3 py-2 text-sm">
+			<div className="flex items-center justify-between gap-2 min-w-0">
+				<div className="flex items-center gap-2 min-w-0">
+					<FileArchive className="h-4 w-4 shrink-0 text-muted-foreground" />
+					<span className="truncate font-medium">{name}</span>
+					{pluginId && (
+						<Badge variant="secondary" className="text-xs shrink-0">
+							{pluginId}
+						</Badge>
+					)}
+				</div>
+				<div className="flex items-center gap-2 shrink-0">
+					<span className="text-xs text-muted-foreground font-mono">{trackingId}</span>
+					{createdAt != null && (
+						<time className="text-xs text-muted-foreground" dateTime={new Date(createdAt).toISOString()}>
+							{new Date(createdAt).toLocaleString()}
+						</time>
+					)}
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon"
+						className="h-8 w-8 text-muted-foreground hover:text-destructive"
+						onClick={onRemove}
+						disabled={removePending}
+						aria-label="Remove"
+					>
+						<Trash2 className="h-4 w-4" />
+					</Button>
+				</div>
+			</div>
+			{isLoading ? (
+				<p className="text-xs text-muted-foreground">Loading analytics…</p>
+			) : summary ? (
+				<div className="flex flex-wrap gap-2 text-xs">
+					<span className="text-muted-foreground">
+						Total events: <strong>{summary.totalEvents}</strong>
+					</span>
+					{Object.entries(summary.byEventType).map(([type, count]) => (
+						<Badge key={type} variant="outline">
+							{type}: {count}
+						</Badge>
+					))}
+				</div>
+			) : null}
+		</li>
+	);
+}
+
 export function SkillInspectorView() {
 	const [state, setState] = useState<SkillState>(INITIAL_STATE);
 	const [activeTab, setActiveTab] = useState("setup");
+	const [createDescription, setCreateDescription] = useState("");
+	const [expandedInstructionFiles, setExpandedInstructionFiles] = useState<Set<string>>(new Set(["SKILL.md"]));
+	const [pendingDownload, setPendingDownload] = useState<{
+		trackingId: string;
+		zipBase64: string;
+		fileName: string;
+	} | null>(null);
+
+	const utils = api.useUtils();
+	const { data: registrations = [], isLoading: listLoading } =
+		api.skillAnalytics.list.useQuery(undefined, { enabled: activeTab === "analytics" });
+	const registerMutation = api.skillAnalytics.register.useMutation({
+		onSuccess: (_data) => {
+			void utils.skillAnalytics.list.invalidate();
+		},
+	});
+	const removeMutation = api.skillAnalytics.remove.useMutation({
+		onSuccess: () => {
+			void utils.skillAnalytics.list.invalidate();
+		},
+	});
+	const createFromDescriptionMutation = api.skillCreator.createFromDescription.useMutation({
+		onSuccess: (data) => {
+			setState((prev) => ({
+				...prev,
+				name: data.name || prev.name,
+				description: data.description || prev.description,
+				body: data.body || prev.body,
+				license: data.license ?? prev.license,
+				compatibility: data.compatibility ?? prev.compatibility,
+				metadataAuthor: data.metadataAuthor ?? prev.metadataAuthor,
+				metadataVersion: data.metadataVersion ?? prev.metadataVersion,
+				metadataMcpServer: data.metadataMcpServer ?? prev.metadataMcpServer,
+			}));
+			setCreateDescription("");
+			toast.success("Skill draft generated. Review and edit below, then check Instructions and Validate.");
+		},
+		onError: (e) => {
+			toast.error(e.message || "Failed to generate skill");
+		},
+	});
 
 	const update = useCallback(<K extends keyof SkillState>(key: K, value: SkillState[K]) => {
 		setState((prev) => ({ ...prev, [key]: value }));
@@ -134,6 +252,73 @@ export function SkillInspectorView() {
 		toast.success("SKILL.md downloaded");
 	}, [fullSkillMd]);
 
+	const handleAnalyticsZip = useCallback(
+		async (files: FileList | null) => {
+			const file = files?.[0];
+			if (!file || !file.name.toLowerCase().endsWith(".zip")) {
+				if (files?.length) toast.error("Please drop a .zip file");
+				return;
+			}
+			const name = file.name.replace(/\.zip$/i, "") || file.name;
+			let base64: string;
+			try {
+				const buf = await file.arrayBuffer();
+				const bytes = new Uint8Array(buf);
+				let binary = "";
+				for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i] ?? 0);
+				base64 = btoa(binary);
+			} catch {
+				toast.error("Failed to read file");
+				return;
+			}
+			try {
+				const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+				const result = await registerMutation.mutateAsync({
+					zipBase64: base64,
+					name,
+					baseUrl: baseUrl || undefined,
+				});
+				setPendingDownload({
+					trackingId: result.trackingId,
+					zipBase64: result.trackableZipBase64,
+					fileName: file.name.replace(/\.zip$/i, "") + "-trackable.zip",
+				});
+				toast.success(`Registered. Download the trackable zip below to distribute.`);
+			} catch (e) {
+				const msg = e instanceof Error ? e.message : "Registration failed";
+				toast.error(msg);
+			}
+		},
+		[registerMutation],
+	);
+
+	const downloadTrackableZip = useCallback(() => {
+		if (!pendingDownload) return;
+		const bin = Uint8Array.from(atob(pendingDownload.zipBase64), (c) => c.charCodeAt(0));
+		const blob = new Blob([bin], { type: "application/zip" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = pendingDownload.fileName;
+		a.click();
+		URL.revokeObjectURL(url);
+		setPendingDownload(null);
+		toast.success("Trackable zip downloaded");
+	}, [pendingDownload]);
+
+	const removeAnalyticsZip = useCallback(
+		(trackingId: string) => {
+			removeMutation.mutate(
+				{ trackingId },
+				{
+					onSuccess: () => toast.success("Removed from list"),
+					onError: (e) => toast.error(e.message),
+				},
+			);
+		},
+		[removeMutation],
+	);
+
 	const allValid = validation.every((v) => v.ok);
 
 	return (
@@ -148,15 +333,51 @@ export function SkillInspectorView() {
 
 			<Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
 				<div className="px-4 pt-3 shrink-0">
-					<TabsList className="grid w-full max-w-md grid-cols-3">
+					<TabsList className="grid w-full max-w-2xl grid-cols-4">
 						<TabsTrigger value="setup">Setup</TabsTrigger>
 						<TabsTrigger value="instructions">Instructions</TabsTrigger>
 						<TabsTrigger value="validate">Validate & Export</TabsTrigger>
+						<TabsTrigger value="analytics">Analytics</TabsTrigger>
 					</TabsList>
 				</div>
 
 				<div className="flex-1 overflow-auto p-4">
-					<TabsContent value="setup" className="mt-0 h-full">
+					<TabsContent value="setup" className="mt-0 h-full space-y-4">
+						<Card>
+							<CardHeader>
+								<CardTitle className="text-base flex items-center gap-2">
+									<Sparkles className="h-4 w-4 text-primary" />
+									Create skill from description
+								</CardTitle>
+								<p className="text-sm text-muted-foreground">
+									Describe the skill you want in plain language. We&apos;ll generate a draft (name, description, and instructions) using the skill-creator workflow.
+								</p>
+							</CardHeader>
+							<CardContent className="space-y-3">
+								<Textarea
+									placeholder="e.g. A skill that helps me write conventional commit messages, or a skill for rotating PDF pages, or a skill that formats our internal status reports..."
+									value={createDescription}
+									onChange={(e) => setCreateDescription(e.target.value)}
+									rows={3}
+									className="resize-none"
+									disabled={createFromDescriptionMutation.isPending}
+								/>
+								<Button
+									type="button"
+									onClick={() => {
+										const trimmed = createDescription.trim();
+										if (!trimmed) {
+											toast.error("Enter a description first");
+											return;
+										}
+										createFromDescriptionMutation.mutate({ description: trimmed });
+									}}
+									disabled={createFromDescriptionMutation.isPending}
+								>
+									{createFromDescriptionMutation.isPending ? "Generating…" : "Generate skill"}
+								</Button>
+							</CardContent>
+						</Card>
 						<Card>
 							<CardHeader>
 								<CardTitle className="text-base">Skill basics</CardTitle>
@@ -227,19 +448,52 @@ export function SkillInspectorView() {
 							<CardHeader>
 								<CardTitle className="text-base flex items-center gap-2">
 									<FileCode className="h-4 w-4" />
-									SKILL.md body
+									Instructions
 								</CardTitle>
 								<p className="text-sm text-muted-foreground">
-									Main instructions in Markdown. Use steps, examples, and troubleshooting. Link to references/ for long docs.
+									Files included in this skill. Click the arrow to expand and edit each file.
 								</p>
 							</CardHeader>
-							<CardContent>
-								<Textarea
-									placeholder="## Instructions..."
-									value={state.body}
-									onChange={(e) => update("body", e.target.value)}
-									className="min-h-[320px] font-mono text-sm resize-y"
-								/>
+							<CardContent className="space-y-0">
+								{[
+									{ id: "SKILL.md", label: "SKILL.md", content: state.body, updateKey: "body" as const },
+								].map((file) => {
+									const isExpanded = expandedInstructionFiles.has(file.id);
+									const toggle = () => {
+										setExpandedInstructionFiles((prev) => {
+											const next = new Set(prev);
+											if (next.has(file.id)) next.delete(file.id);
+											else next.add(file.id);
+											return next;
+										});
+									};
+									return (
+										<div key={file.id} className="border-b last:border-b-0">
+											<button
+												type="button"
+												onClick={toggle}
+												className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left hover:bg-muted/50 transition-colors"
+											>
+												<span className="font-mono text-sm truncate">{file.label}</span>
+												{isExpanded ? (
+													<ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+												) : (
+													<ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+												)}
+											</button>
+											{isExpanded && (
+												<div className="border-t bg-muted/20 px-3 pb-3 pt-2">
+													<Textarea
+														placeholder="## Instructions..."
+														value={file.content}
+														onChange={(e) => update(file.updateKey, e.target.value)}
+														className="min-h-[320px] font-mono text-sm resize-y"
+													/>
+												</div>
+											)}
+										</div>
+									);
+								})}
 							</CardContent>
 						</Card>
 					</TabsContent>
@@ -299,6 +553,73 @@ export function SkillInspectorView() {
 								<p className="text-xs text-muted-foreground">
 									To distribute: zip the skill folder and upload to Claude.ai via Settings → Capabilities → Skills, or place in Claude Code skills directory.
 								</p>
+							</CardContent>
+						</Card>
+					</TabsContent>
+
+					<TabsContent value="analytics" className="mt-0 h-full space-y-4">
+						<Card>
+							<CardHeader>
+								<CardTitle className="text-base flex items-center gap-2">
+									<BarChart3 className="h-4 w-4" />
+									Register a plugin for analytics
+								</CardTitle>
+								<p className="text-sm text-muted-foreground">
+									Drop your plugin .zip here to register it. We&apos;ll give you a rebundled zip that&apos;s ready to distribute; when people use it, analytics will show up on this page.
+								</p>
+							</CardHeader>
+							<CardContent className="space-y-4">
+								<Dropzone
+									accept=".zip"
+									dropMessage="Drop your plugin .zip here or click to choose"
+									onChange={(files) => void handleAnalyticsZip(files)}
+								/>
+								{registerMutation.isPending && (
+									<p className="text-sm text-muted-foreground">Registering and rebundling…</p>
+								)}
+								{pendingDownload && (
+									<div className="rounded-md border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30 p-3 space-y-2">
+										<p className="text-sm font-medium text-green-800 dark:text-green-200">
+											Ready to distribute
+										</p>
+										<p className="text-xs text-muted-foreground">
+											Download the trackable zip and share it. Events will appear below.
+										</p>
+										<Button size="sm" onClick={downloadTrackableZip}>
+											<Download className="h-4 w-4 mr-2" />
+											Download trackable zip
+										</Button>
+									</div>
+								)}
+							</CardContent>
+						</Card>
+						<Card>
+							<CardHeader>
+								<CardTitle className="text-base">Registered skills</CardTitle>
+								<p className="text-sm text-muted-foreground">
+									Skills you&apos;ve registered for analytics. Usage from distributed plugins appears here.
+								</p>
+							</CardHeader>
+							<CardContent>
+								{listLoading ? (
+									<p className="text-sm text-muted-foreground">Loading…</p>
+								) : registrations.length === 0 ? (
+									<p className="text-sm text-muted-foreground">No registered skills yet. Drop a zip above to register one.</p>
+								) : (
+									<ul className="space-y-3">
+										{registrations.map((r) => (
+											<AnalyticsRegistrationRow
+												key={r.trackingId}
+												trackingId={r.trackingId}
+												name={r.name}
+												pluginId={r.pluginId}
+												createdAt={r.createdAt}
+												onRemove={() => removeAnalyticsZip(r.trackingId)}
+												removePending={removeMutation.isPending}
+											/>
+										))}
+									</ul>
+								)}
 							</CardContent>
 						</Card>
 					</TabsContent>

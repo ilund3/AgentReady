@@ -25,6 +25,7 @@ export * from "./preview-deployments";
 export * from "./project";
 export * from "./redirects";
 export * from "./redis";
+export * from "./skill-analytics";
 export * from "./registry";
 export * from "./rollbacks";
 export * from "./schedule";
