@@ -50,7 +50,8 @@
 	},
 	"pnpm": {
 		"overrides": {
-			"esbuild": "0.20.2"
+			"esbuild": "0.20.2",
+			"typescript": "~5.8.3"
 		},
 		"onlyBuiltDependencies": [
 			"@scarf/scarf",
