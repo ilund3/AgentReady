@@ -16,7 +16,10 @@ RUN apt-get update && apt-get install -y python3 make g++ git pkg-config libsecr
 RUN pnpm install --frozen-lockfile
 
 ENV NODE_ENV=production
+# Increase tsc call stack: large source files with emoji/non-ASCII exhaust the default ~1MB stack
+ENV NODE_OPTIONS="--stack-size=8192"
 RUN pnpm --filter=@dokploy/server build
+ENV NODE_OPTIONS=""
 RUN pnpm --filter=./apps/dokploy run build
 # Build MCP Inspector UI into dokploy public so /inspector/ is served
 RUN pnpm --filter=@modelcontextprotocol/inspector-client run build 2>/dev/null || true
