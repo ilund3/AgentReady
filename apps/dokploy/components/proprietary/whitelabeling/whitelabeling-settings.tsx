@@ -306,7 +306,7 @@ export function WhitelabelingSettings() {
 										<FormLabel>Application Description</FormLabel>
 										<FormControl>
 											<Input
-												placeholder="Make your products ready for any agent client with MCP server hosting, security, authentication, and analytics."
+												placeholder="Make your products ready for any agent client with MCP server hosting, security, and analytics."
 												{...field}
 											/>
 										</FormControl>
