@@ -12,7 +12,7 @@ export const OnboardingLayout = ({ children }: Props) => {
 	const appName = whitelabeling?.appName || "AgentReady";
 	const appDescription =
 		whitelabeling?.appDescription ||
-		"Make your products ready for any agent client with MCP server hosting, security, and analytics.";
+		"Make your products ready for any agent client with MCP server hosting, security, authentication, and analytics.";
 	const logoUrl =
 		whitelabeling?.loginLogoUrl || whitelabeling?.logoUrl || undefined;
 
