@@ -21,8 +21,19 @@ const nextConfig = {
 		ignoreBuildErrors: true,
 	},
 	transpilePackages: ["@dokploy/server"],
-	webpack: (config) => {
+	// ssh2 and bcrypt use native Node.js addons (.node files) that webpack
+	// cannot bundle. Mark them as server-side externals so Next.js loads them
+	// via require() at runtime instead of attempting to bundle them.
+	serverExternalPackages: ["ssh2", "cpu-features", "bcrypt"],
+	webpack: (config, { isServer }) => {
 		config.resolve.alias["@inspector"] = path.join(__dirname, "inspector");
+		if (isServer) {
+			// ssh2 and bcrypt include native .node binaries that webpack cannot
+			// parse. Add them as externals so Node.js require() loads them at
+			// runtime rather than webpack attempting to bundle them.
+			const existing = Array.isArray(config.externals) ? config.externals : [];
+			config.externals = [...existing, "ssh2", "cpu-features", "bcrypt"];
+		}
 		return config;
 	},
 	async headers() {
