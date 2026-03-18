@@ -1,56 +1,121 @@
-import { Activity } from "lucide-react";
-import { useState } from "react";
+import { toast } from "sonner";
+import { UpdateServerIp } from "@/components/dashboard/settings/web-server/update-server-ip";
 import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { ShowStorageActions } from "./show-storage-actions";
-import { ShowTraefikActions } from "./show-traefik-actions";
-import { ToggleDockerCleanup } from "./toggle-docker-cleanup";
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { api } from "@/utils/api";
+import { ShowModalLogs } from "../../web-server/show-modal-logs";
+import { TerminalModal } from "../../web-server/terminal-modal";
+import { GPUSupportModal } from "../gpu-support-modal";
 
-interface Props {
-	serverId: string;
-	asButton?: boolean;
-}
+export const ShowServerActions = () => {
+	const { mutateAsync: reloadServer, isPending } =
+		api.settings.reloadServer.useMutation();
 
-export const ShowServerActions = ({ serverId, asButton = false }: Props) => {
-	const [isOpen, setIsOpen] = useState(false);
+	const { mutateAsync: cleanRedis } = api.settings.cleanRedis.useMutation();
+	const { mutateAsync: reloadRedis } = api.settings.reloadRedis.useMutation();
+	const { mutateAsync: cleanAllDeploymentQueue } =
+		api.settings.cleanAllDeploymentQueue.useMutation();
+
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			{asButton ? (
-				<DialogTrigger asChild>
-					<Button variant="outline" size="icon" className="h-9 w-9">
-						<Activity className="h-4 w-4" />
-					</Button>
-				</DialogTrigger>
-			) : (
-				<DropdownMenuItem
-					className="w-full cursor-pointer"
-					onSelect={(e) => {
-						e.preventDefault();
-						setIsOpen(true);
-					}}
-				>
-					View Actions
-				</DropdownMenuItem>
-			)}
-			<DialogContent className="sm:max-w-xl">
-				<div className="flex flex-col gap-1">
-					<DialogTitle className="text-xl">Web server settings</DialogTitle>
-					<DialogDescription>Reload or clean the web server.</DialogDescription>
-				</div>
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild disabled={isPending}>
+				<Button isLoading={isPending} variant="outline">
+					Server
+				</Button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent className="w-56" align="start">
+				<DropdownMenuLabel>Actions</DropdownMenuLabel>
+				<DropdownMenuSeparator />
+				<DropdownMenuGroup>
+					<DropdownMenuItem
+						onClick={async () => {
+							await reloadServer()
+								.then(async () => {
+									toast.success("Server Reloaded");
+								})
+								.catch(() => {
+									toast.success("Server Reloaded");
+								});
+						}}
+						className="cursor-pointer"
+					>
+						<span>Reload</span>
+					</DropdownMenuItem>
+					<TerminalModal serverId="local">
+						<span>Terminal</span>
+					</TerminalModal>
+					<ShowModalLogs appName="dokploy">
+						<DropdownMenuItem
+							className="cursor-pointer"
+							onSelect={(e) => e.preventDefault()}
+						>
+							View Logs
+						</DropdownMenuItem>
+					</ShowModalLogs>
+					<GPUSupportModal />
+					<UpdateServerIp>
+						<DropdownMenuItem
+							className="cursor-pointer"
+							onSelect={(e) => e.preventDefault()}
+						>
+							Update Server IP
+						</DropdownMenuItem>
+					</UpdateServerIp>
 
-				<div className="grid grid-cols-2 w-full gap-4">
-					<ShowTraefikActions serverId={serverId} />
-					<ShowStorageActions serverId={serverId} />
-					<ToggleDockerCleanup serverId={serverId} />
-				</div>
-			</DialogContent>
-		</Dialog>
+					<DropdownMenuItem
+						className="cursor-pointer"
+						onClick={async () => {
+							await cleanRedis()
+								.then(async () => {
+									toast.success("Redis cleaned");
+								})
+								.catch(() => {
+									toast.error("Error cleaning Redis");
+								});
+						}}
+					>
+						Clean Redis
+					</DropdownMenuItem>
+
+					<DropdownMenuItem
+						className="cursor-pointer"
+						onClick={async () => {
+							await cleanAllDeploymentQueue()
+								.then(() => {
+									toast.success("Deployment queue cleaned");
+								})
+								.catch(() => {
+									toast.error("Error cleaning deployment queue");
+								});
+						}}
+					>
+						Clean all deployment queue
+					</DropdownMenuItem>
+
+					<DropdownMenuItem
+						className="cursor-pointer"
+						onClick={async () => {
+							await reloadRedis()
+								.then(async () => {
+									toast.success("Redis reloaded");
+								})
+								.catch(() => {
+									toast.error("Error reloading Redis");
+								});
+						}}
+					>
+						Reload Redis
+					</DropdownMenuItem>
+				</DropdownMenuGroup>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 };

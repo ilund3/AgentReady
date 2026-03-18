@@ -1,73 +1,23 @@
-<div align="center">
-  <a href="https://dokploy.com">
-    <img src=".github/sponsors/logo.png" alt="Dokploy - Open Source Alternative to Vercel, Heroku and Netlify." width="100%"  />
-  </a>
-  </br>
-  </br>
-  <p>Join us on Discord for help, feedback, and discussions!</p>
-  <a href="https://discord.gg/2tBnJ3jDJc">
-    <img src="https://discordapp.com/api/guilds/1234073262418563112/widget.png?style=banner2" alt="Discord Shield"/>
-  </a>
-</div>
-<br />
+# AgentReady
 
+AgentReady is a platform for managing deployments, infrastructure, and **MCP (Model Context Protocol) tooling**—including an integrated **MCP Inspector** in the dashboard.
 
-Dokploy is a free, self-hostable Platform as a Service (PaaS) that simplifies the deployment and management of applications and databases.
+## MCP Inspector
 
-## ✨ Features
+The dashboard includes **MCP Inspector** at **Dashboard → MCP Inspector**. The Inspector UI lives in `apps/dokploy/inspector/` and is rendered in the same app (no iframe).
 
-Dokploy includes multiple features to make your life easier.
+- **Dev:** from the repo root, run `pnpm run dokploy:dev` and open **MCP Inspector** from the sidebar.
 
-- **Applications**: Deploy any type of application (Node.js, PHP, Python, Go, Ruby, etc.).
-- **Databases**: Create and manage databases with support for MySQL, PostgreSQL, MongoDB, MariaDB, and Redis.
-- **Backups**: Automate backups for databases to an external storage destination.
-- **Docker Compose**: Native support for Docker Compose to manage complex applications.
-- **Multi Node**: Scale applications to multiple nodes using Docker Swarm to manage the cluster.
-- **Templates**: Deploy open-source templates (Plausible, Pocketbase, Calcom, etc.) with a single click.
-- **Traefik Integration**: Automatically integrates with Traefik for routing and load balancing.
-- **Real-time Monitoring**: Monitor CPU, memory, storage, and network usage for every resource.
-- **Docker Management**: Easily deploy and manage Docker containers.
-- **CLI/API**: Manage your applications and databases using the command line or through the API.
-- **Notifications**: Get notified when your deployments succeed or fail (via Slack, Discord, Telegram, Email, etc.).
-- **Multi Server**: Deploy and manage your applications remotely to external servers.
-- **Self-Hosted**: Self-host Dokploy on your VPS.
-- **MCP Inspector**: Built-in [Model Context Protocol](https://modelcontextprotocol.io) inspector to test and debug MCP servers. Open **MCP Inspector** from the dashboard sidebar to connect to MCP servers via stdio, SSE, or streamable HTTP.
-
-## 🚀 Getting Started
-
-To get started, run the following command on a VPS:
-
-Want to skip the installation process? [Try the Dokploy Cloud](https://app.dokploy.com).
+## Development
 
 ```bash
-curl -sSL https://dokploy.com/install.sh | sh
+pnpm install
+pnpm run dokploy:dev
 ```
 
-For detailed documentation, visit [docs.dokploy.com](https://docs.dokploy.com).
+- **API docs:** generate OpenAPI with `pnpm run generate:openapi` (outputs `openapi.json`).
+- **Docs:** [docs.agentready.com](https://docs.agentready.com/docs/core)
 
-### MCP Inspector
+## License
 
-The dashboard includes an **MCP Inspector** at **Dashboard → MCP Inspector**. It is fully integrated into the same app (no iframe): the Inspector UI lives in `apps/dokploy/inspector/` and is rendered as part of the Dokploy dashboard.
-
-- **Run the app** with `pnpm run dokploy:dev` (from repo root); open **MCP Inspector** from the sidebar.
-- **For stdio / local MCP connections**, run the Inspector proxy in a separate terminal:  
-  `pnpm run inspector-server:dev`  
-  The proxy runs on port 6277; the Inspector will use it when connecting to local/stdio MCP servers.
-
-[Github Sponsors](https://github.com/sponsors/Siumauricio)
-
-### Contributors 🤝
-
-<a href="https://github.com/dokploy/dokploy/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=dokploy/dokploy" alt="Contributors" />
-</a>
-
-## 📺 Video Tutorial
-
-<a href="https://youtu.be/mznYKPvhcfw">
-  <img src="https://dokploy.com/banner.png" alt="Watch the video" width="400"/>
-</a>
-
-## 🤝 Contributing
-
-Check out the [Contributing Guide](CONTRIBUTING.md) for more information.
+See the repository license file. Portions of this codebase derive from upstream open-source projects used under their respective licenses.

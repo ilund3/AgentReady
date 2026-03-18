@@ -125,15 +125,14 @@ export const WebDomain = () => {
 						</div>
 					</CardHeader>
 					<CardContent className="space-y-2 py-6 border-t">
-						{/* Warning for GitHub webhook URL changes */}
+						{/* Warning for Git webhook URL changes */}
 						{hasChanged && (
 							<AlertBlock type="warning">
 								<div className="space-y-2">
 									<p className="font-medium">⚠️ Important: URL Change Impact</p>
 									<p>
-										If you change the Dokploy Server URL make sure to update
-										your Github Apps to keep the auto-deploy working and preview
-										deployments working.
+										If you change the server URL, update your Git provider apps
+										so auto-deploy and preview deployments keep working.
 									</p>
 								</div>
 							</AlertBlock>
@@ -153,7 +152,7 @@ export const WebDomain = () => {
 												<FormControl>
 													<Input
 														className="w-full"
-														placeholder={"dokploy.com"}
+														placeholder={"dashboard.example.com"}
 														{...field}
 													/>
 												</FormControl>

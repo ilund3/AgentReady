@@ -7,7 +7,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/utils/api";
-import { ShowDokployActions } from "./servers/actions/show-dokploy-actions";
+import { ShowServerActions } from "./servers/actions/show-server-actions";
 import { ShowStorageActions } from "./servers/actions/show-storage-actions";
 import { ShowTraefikActions } from "./servers/actions/show-traefik-actions";
 import { ToggleDockerCleanup } from "./servers/actions/toggle-docker-cleanup";
@@ -17,7 +17,7 @@ export const WebServer = () => {
 	const { data: webServerSettings } =
 		api.settings.getWebServerSettings.useQuery();
 
-	const { data: dokployVersion } = api.settings.getDokployVersion.useQuery();
+	const { data: appVersion } = api.settings.getAppVersion.useQuery();
 
 	return (
 		<div className="w-full">
@@ -41,7 +41,7 @@ export const WebServer = () => {
 					</CardHeader> */}
 					<CardContent className="space-y-6 py-6 border-t">
 						<div className="grid md:grid-cols-2 gap-4">
-							<ShowDokployActions />
+							<ShowServerActions />
 							<ShowTraefikActions />
 							<ShowStorageActions />
 
@@ -53,7 +53,7 @@ export const WebServer = () => {
 								Server IP: {webServerSettings?.serverIp}
 							</span>
 							<span className="text-sm text-muted-foreground">
-								Version: {dokployVersion}
+								Version: {appVersion}
 							</span>
 
 							<ToggleDockerCleanup />

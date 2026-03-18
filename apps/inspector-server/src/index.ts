@@ -188,27 +188,63 @@ const sessionToken =
   process.env.MCP_PROXY_AUTH_TOKEN || randomBytes(32).toString("hex");
 const authDisabled = !!process.env.DANGEROUSLY_OMIT_AUTH;
 
+function readProxyBearerToken(req: express.Request): string | null {
+  const authHeader = req.headers["x-mcp-proxy-auth"];
+  const authHeaderValue = Array.isArray(authHeader)
+    ? authHeader[0]
+    : authHeader;
+  if (!authHeaderValue || !authHeaderValue.startsWith("Bearer ")) {
+    return null;
+  }
+  return authHeaderValue.substring(7);
+}
+
+function isValidProxyBearerToken(providedToken: string): boolean {
+  const providedBuffer = Buffer.from(providedToken);
+  const expectedBuffer = Buffer.from(sessionToken);
+  if (providedBuffer.length !== expectedBuffer.length) {
+    return false;
+  }
+  return timingSafeEqual(providedBuffer, expectedBuffer);
+}
+
 // Origin validation middleware to prevent DNS rebinding attacks
 const originValidationMiddleware = (
   req: express.Request,
   res: express.Response,
   next: express.NextFunction,
 ) => {
+  // Valid proxy token = authenticated Inspector client; Origin may be any deployed URL.
+  if (!authDisabled) {
+    const bearer = readProxyBearerToken(req);
+    if (bearer && isValidProxyBearerToken(bearer)) {
+      return next();
+    }
+  }
+
   const origin = req.headers.origin;
 
-  // Default origins based on CLIENT_PORT or use environment variable
   const clientPort = process.env.CLIENT_PORT || "6274";
-  const defaultOrigin = `http://localhost:${clientPort}`;
-  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
-    defaultOrigin,
+  const extraFromEnv =
+    process.env.ALLOWED_ORIGINS?.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean) ?? [];
+  // Merge env with common dashboard origins (Next dev + standalone inspector port)
+  const allowedOrigins = [
+    ...new Set([
+      ...extraFromEnv,
+      `http://localhost:${clientPort}`,
+      `http://127.0.0.1:${clientPort}`,
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+    ]),
   ];
 
   if (origin && !allowedOrigins.includes(origin)) {
     console.error(`Invalid origin: ${origin}`);
     res.status(403).json({
       error: "Forbidden - invalid origin",
-      message:
-        "Request blocked to prevent DNS rebinding attacks. Configure allowed origins via environment variable.",
+      message: `Origin not allowed. Restart the proxy with ALLOWED_ORIGINS including your dashboard URL (comma-separated). Example: ALLOWED_ORIGINS=${origin}`,
     });
     return;
   }
@@ -232,31 +268,8 @@ const authMiddleware = (
     });
   };
 
-  const authHeader = req.headers["x-mcp-proxy-auth"];
-  const authHeaderValue = Array.isArray(authHeader)
-    ? authHeader[0]
-    : authHeader;
-
-  if (!authHeaderValue || !authHeaderValue.startsWith("Bearer ")) {
-    sendUnauthorized();
-    return;
-  }
-
-  const providedToken = authHeaderValue.substring(7); // Remove 'Bearer ' prefix
-  const expectedToken = sessionToken;
-
-  // Convert to buffers for timing-safe comparison
-  const providedBuffer = Buffer.from(providedToken);
-  const expectedBuffer = Buffer.from(expectedToken);
-
-  // Check length first to prevent timing attacks
-  if (providedBuffer.length !== expectedBuffer.length) {
-    sendUnauthorized();
-    return;
-  }
-
-  // Perform timing-safe comparison
-  if (!timingSafeEqual(providedBuffer, expectedBuffer)) {
+  const providedToken = readProxyBearerToken(req);
+  if (!providedToken || !isValidProxyBearerToken(providedToken)) {
     sendUnauthorized();
     return;
   }

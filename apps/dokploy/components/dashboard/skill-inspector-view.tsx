@@ -19,11 +19,13 @@ import {
 	FileCode,
 	ListChecks,
 	BarChart3,
+	Users,
 	FileArchive,
 	Trash2,
 	Sparkles,
 	ChevronDown,
 	ChevronRight,
+	Crown,
 } from "lucide-react";
 import JSZip from "jszip";
 import { toast } from "sonner";
@@ -31,6 +33,19 @@ import { Dropzone } from "@/components/ui/dropzone";
 import { api } from "@/utils/api";
 import { buildTelemetryShimJs } from "@/lib/agentready-telemetry-shim";
 import Link from "next/link";
+import {
+	SkillClientsPanel,
+	CLIENT_LOGO_PATHS,
+} from "@/components/dashboard/skill-clients-panel";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 
 const KEBAB_REGEX = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX_DESCRIPTION_LENGTH = 1024;
@@ -141,6 +156,34 @@ const CHECKLIST_ITEMS = [
 	{ id: "no-xml", label: "No XML tags (< >) in frontmatter", check: (s: SkillState) => !/[<>]/.test([s.name, s.description, s.license, s.compatibility].filter(Boolean).join("")) },
 	{ id: "desc-length", label: "Description under 1024 characters", check: (s: SkillState) => (s.description?.length ?? 0) <= MAX_DESCRIPTION_LENGTH },
 	{ id: "instructions-clear", label: "Instructions are clear and actionable", check: (s: SkillState) => (s.body?.length ?? 0) > 50 },
+] as const;
+
+/** Setup → Clients target checklist (matches Clients tab). Crown right = MCP / Pro-gated. */
+const SETUP_CLIENT_GROUPS = [
+	{
+		label: "LLMs",
+		clients: [
+			{ id: "chatgpt-apps", label: "ChatGPT Apps", proMcp: true, logo: CLIENT_LOGO_PATHS.chatgpt },
+			{ id: "claude-connectors", label: "Claude Connectors", proMcp: true, logo: CLIENT_LOGO_PATHS.claude },
+			{ id: "mistral", label: "Mistral", proMcp: true, logo: CLIENT_LOGO_PATHS.mistral },
+			{ id: "cursor", label: "Cursor", proMcp: true, logo: CLIENT_LOGO_PATHS.cursor },
+			{ id: "vscode", label: "VS Code", proMcp: true, logo: CLIENT_LOGO_PATHS.vscode },
+			{ id: "claude-code", label: "Claude Code", proMcp: true, logo: CLIENT_LOGO_PATHS.claude },
+			{ id: "codex", label: "Codex", proMcp: true, logo: CLIENT_LOGO_PATHS.codex },
+			{ id: "gemini-cli", label: "Gemini CLI", proMcp: true, logo: CLIENT_LOGO_PATHS.geminiCli },
+			{ id: "goose", label: "Goose", proMcp: true, logo: CLIENT_LOGO_PATHS.goose },
+		],
+	},
+	{
+		label: "CLI-based agents",
+		clients: [
+			{ id: "openclaw", label: "OpenClaw", proMcp: false, logo: CLIENT_LOGO_PATHS.openclaw },
+			{ id: "openfang", label: "OpenFang", proMcp: false, logo: CLIENT_LOGO_PATHS.openfang },
+			{ id: "nanobot", label: "Nanobot", proMcp: true, logo: CLIENT_LOGO_PATHS.nanobot },
+			{ id: "zeroclaw", label: "ZeroClaw", proMcp: false, logo: CLIENT_LOGO_PATHS.zeroclaw },
+			{ id: "anything-llm", label: "Anything LLM", proMcp: true, logo: CLIENT_LOGO_PATHS.anythingllm },
+		],
+	},
 ] as const;
 
 function AnalyticsRegistrationRow({
@@ -290,6 +333,9 @@ export function SkillInspectorView() {
 	const [activeTab, setActiveTab] = useState("setup");
 	const [createDescription, setCreateDescription] = useState("");
 	const [expandedInstructionFiles, setExpandedInstructionFiles] = useState<Set<string>>(new Set(["SKILL.md"]));
+	const [clientsOpen, setClientsOpen] = useState(false);
+	const [clientTargets, setClientTargets] = useState<Record<string, boolean>>({});
+	const [proUpsellOpen, setProUpsellOpen] = useState(false);
 	const [pendingDownload, setPendingDownload] = useState<{
 		trackingId: string;
 		zipBase64: string;
@@ -335,6 +381,46 @@ export function SkillInspectorView() {
 	}, []);
 
 	const suggestedName = useMemo(() => toKebab(state.name || "your-skill-name"), [state.name]);
+
+	const clientsMcpUrl = useMemo(
+		() => state.metadataMcpServer.trim() || "https://capitals.skybridge.tech",
+		[state.metadataMcpServer],
+	);
+	const clientsDisplayName = useMemo(() => {
+		const k = state.name?.trim();
+		if (!k) return "Capitals of the World";
+		return k
+			.split("-")
+			.filter(Boolean)
+			.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+			.join(" ");
+	}, [state.name]);
+	const clientsCliId = useMemo(() => {
+		const k = state.name?.trim();
+		if (!k) return "Capitals-of-the-World";
+		return k
+			.split("-")
+			.filter(Boolean)
+			.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+			.join("-");
+	}, [state.name]);
+	const clientsSkillDescription = useMemo(
+		() => state.description?.trim() || "An example ChatGPT/MCP app allowing you to explore the capitals of the world.",
+		[state.description],
+	);
+
+	const selectedClientCount = useMemo(
+		() => Object.values(clientTargets).filter(Boolean).length,
+		[clientTargets],
+	);
+
+	const onClientCheck = useCallback((id: string, proMcp: boolean, checked: boolean) => {
+		if (checked && proMcp) {
+			setProUpsellOpen(true);
+			return;
+		}
+		setClientTargets((prev) => ({ ...prev, [id]: checked }));
+	}, []);
 
 	const validation = useMemo(() => {
 		return CHECKLIST_ITEMS.map((item) => ({
@@ -481,16 +567,119 @@ export function SkillInspectorView() {
 
 			<Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
 				<div className="px-4 pt-3 shrink-0">
-					<TabsList className="grid w-full max-w-2xl grid-cols-4">
+					<TabsList className="grid w-full max-w-5xl grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 h-auto min-h-10">
 						<TabsTrigger value="setup">Setup</TabsTrigger>
 						<TabsTrigger value="instructions">Instructions</TabsTrigger>
-						<TabsTrigger value="validate">Validate & Export</TabsTrigger>
+						<TabsTrigger value="validate" className="text-xs sm:text-sm px-2">
+							Validate &amp; Export
+						</TabsTrigger>
 						<TabsTrigger value="analytics">Analytics</TabsTrigger>
+						<TabsTrigger value="clients" className="gap-1">
+							<Users className="h-3.5 w-3.5 hidden sm:inline" />
+							Clients
+						</TabsTrigger>
 					</TabsList>
 				</div>
 
 				<div className="flex-1 overflow-auto p-4">
 					<TabsContent value="setup" className="mt-0 h-full space-y-4">
+						<Card className="max-w-5xl">
+							<CardHeader className="pb-3">
+								<CardTitle className="text-base">Clients</CardTitle>
+								<p className="text-sm text-muted-foreground font-normal">
+									Select where you plan to ship this skill.{" "}
+									<span className="inline-flex items-center gap-0.5">
+										<Crown className="h-3 w-3 text-amber-500 shrink-0" aria-hidden />
+										<span>needs MCP hosting (AgentReady Pro).</span>
+									</span>
+								</p>
+							</CardHeader>
+							<CardContent>
+								<Popover open={clientsOpen} onOpenChange={setClientsOpen}>
+									<PopoverTrigger asChild>
+										<Button
+											type="button"
+											variant="outline"
+											className="w-full max-w-md justify-between font-normal"
+											aria-expanded={clientsOpen}
+										>
+											<span>Clients</span>
+											<span className="flex items-center gap-2 text-muted-foreground">
+												{selectedClientCount > 0 ? (
+													<Badge variant="secondary" className="font-normal">
+														{selectedClientCount} selected
+													</Badge>
+												) : null}
+												<ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
+											</span>
+										</Button>
+									</PopoverTrigger>
+									<PopoverContent className="w-[min(100vw-2rem,22rem)] p-0" align="start">
+										<div className="max-h-[min(70vh,24rem)] overflow-y-auto p-2 space-y-3">
+											{SETUP_CLIENT_GROUPS.map((group) => (
+												<div key={group.label}>
+													<p className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+														{group.label}
+													</p>
+													<ul className="space-y-0.5">
+														{group.clients.map((c) => (
+															<li key={c.id}>
+																<label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted/60">
+																	<Checkbox
+																		className="shrink-0"
+																		checked={!!clientTargets[c.id]}
+																		onCheckedChange={(v) =>
+																			onClientCheck(c.id, c.proMcp, v === true)
+																		}
+																	/>
+																	{/* eslint-disable-next-line @next/next/no-img-element -- public client logos (mixed formats) */}
+																	<img
+																		src={c.logo}
+																		alt=""
+																		width={32}
+																		height={32}
+																		className="h-8 w-8 shrink-0 object-contain"
+																	/>
+																	<span className="min-w-0 flex-1 leading-tight pr-1">{c.label}</span>
+																	{c.proMcp ? (
+																		<Crown
+																			className="h-3.5 w-3.5 shrink-0 text-amber-500"
+																			aria-label="Requires MCP server"
+																		/>
+																	) : (
+																		<span className="h-3.5 w-3.5 shrink-0" aria-hidden />
+																	)}
+																</label>
+															</li>
+														))}
+													</ul>
+												</div>
+											))}
+										</div>
+									</PopoverContent>
+								</Popover>
+							</CardContent>
+						</Card>
+
+						<Dialog open={proUpsellOpen} onOpenChange={setProUpsellOpen}>
+							<DialogContent className="sm:max-w-md">
+								<DialogHeader>
+									<DialogTitle className="flex items-center gap-2">
+										<Crown className="h-5 w-5 text-amber-500" />
+										AgentReady Pro
+									</DialogTitle>
+									<DialogDescription className="text-base text-foreground pt-2">
+										Try AgentReady Pro free for thirty days, then $200/M queries.
+									</DialogDescription>
+								</DialogHeader>
+								<DialogFooter>
+									<Button type="button" onClick={() => setProUpsellOpen(false)}>
+										Got it
+									</Button>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+
 						<Card>
 							<CardHeader>
 								<CardTitle className="text-base flex items-center gap-2">
@@ -777,6 +966,15 @@ export function SkillInspectorView() {
 								)}
 							</CardContent>
 						</Card>
+					</TabsContent>
+
+					<TabsContent value="clients" className="mt-0 h-full space-y-4">
+						<SkillClientsPanel
+							mcpUrl={clientsMcpUrl}
+							displayName={clientsDisplayName}
+							cliId={clientsCliId}
+							skillDescription={clientsSkillDescription}
+						/>
 					</TabsContent>
 				</div>
 			</Tabs>

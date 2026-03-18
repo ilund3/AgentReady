@@ -431,7 +431,7 @@ export const settingsRouter = createTRPCRouter({
 		return true;
 	}),
 
-	getDokployVersion: protectedProcedure.query(() => {
+	getAppVersion: protectedProcedure.query(() => {
 		return packageInfo.version;
 	}),
 	getReleaseTag: protectedProcedure.query(() => {
@@ -571,7 +571,7 @@ export const settingsRouter = createTRPCRouter({
 			});
 
 			openApiDocument.info = {
-				title: "Dokploy API",
+				title: "AgentReady API",
 				description: "Endpoints for dokploy",
 				version: packageInfo.version,
 			};
@@ -911,7 +911,7 @@ export const settingsRouter = createTRPCRouter({
 		return getLogCleanupStatus();
 	}),
 
-	getDokployCloudIps: adminProcedure.query(async () => {
+	getCloudEgressIps: adminProcedure.query(async () => {
 		if (!IS_CLOUD) {
 			return [];
 		}

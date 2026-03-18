@@ -1,6 +1,5 @@
 import copy from "copy-to-clipboard";
-import { CopyIcon, ExternalLinkIcon, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { CopyIcon, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { CodeEditor } from "@/components/shared/code-editor";
@@ -36,7 +35,7 @@ export const CreateSSHKey = () => {
 				});
 				await mutateAsync({
 					name: "dokploy-cloud-ssh-key",
-					description: "Used on Dokploy Cloud",
+					description: "Used on AgentReady Cloud",
 					privateKey: keys.privateKey,
 					publicKey: keys.publicKey,
 					organizationId: "",
@@ -171,13 +170,9 @@ export const CreateSSHKey = () => {
 											preferred provider (Hostinger, Digital Ocean, Hetzner,
 											etc.)
 										</p>
-										<Link
-											href="https://docs.dokploy.com/docs/core/remote-servers/instructions#requirements"
-											target="_blank"
-											className="text-primary flex flex-row gap-2 mt-2"
-										>
-											View Tutorial <ExternalLinkIcon className="size-4" />
-										</Link>
+										<span className="text-sm text-muted-foreground mt-2 block">
+											Use this key when creating your server in your preferred provider.
+										</span>
 									</div>
 								)}
 							</div>

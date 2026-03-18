@@ -12,7 +12,7 @@ interface Props {
 export default function Custom404({ statusCode, error }: Props) {
 	const displayStatusCode = statusCode || 400;
 	const { config: whitelabeling } = useWhitelabelingPublic();
-	const appName = whitelabeling?.appName || "Dokploy";
+	const appName = whitelabeling?.appName || "AgentReady";
 	const logoUrl = whitelabeling?.logoUrl || undefined;
 	const errorTitle = whitelabeling?.errorPageTitle;
 	const errorDescription = whitelabeling?.errorPageDescription;
@@ -82,17 +82,7 @@ export default function Custom404({ statusCode, error }: Props) {
 				<footer className="mt-auto text-center py-5">
 					<div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
 						<p className="text-sm text-gray-500">
-							{whitelabeling?.footerText ? (
-								whitelabeling.footerText
-							) : (
-								<Link
-									href="https://github.com/Dokploy/dokploy/issues"
-									target="_blank"
-									className="underline hover:text-primary transition-colors"
-								>
-									Submit Log in issue on Github
-								</Link>
-							)}
+							{whitelabeling?.footerText ?? "An error occurred."}
 						</p>
 					</div>
 				</footer>

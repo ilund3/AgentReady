@@ -23,7 +23,13 @@ import { getHubSpotUTK, submitToHubSpot } from "../utils/tracking/hubspot";
 import { sendEmail } from "../verification/send-verification-email";
 import { getPublicIpWithFallback } from "../wss/utils";
 
-const { handler, api } = betterAuth({
+const authBaseUrl =
+	process.env.BETTER_AUTH_URL ||
+	process.env.NEXT_PUBLIC_APP_URL ||
+	(process.env.NODE_ENV === "development" ? "http://localhost:3000" : undefined);
+
+const betterAuthInstance = betterAuth({
+	...(authBaseUrl && { baseURL: authBaseUrl }),
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema: schema,
@@ -59,16 +65,24 @@ const { handler, api } = betterAuth({
 			allowDifferentEmails: true,
 		},
 	},
-	appName: "Dokploy",
+	appName: "AgentReady",
 	socialProviders: {
-		github: {
-			clientId: process.env.GITHUB_CLIENT_ID as string,
-			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-		},
-		google: {
-			clientId: process.env.GOOGLE_CLIENT_ID as string,
-			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-		},
+		...(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
+			? {
+					github: {
+						clientId: process.env.GITHUB_CLIENT_ID,
+						clientSecret: process.env.GITHUB_CLIENT_SECRET,
+					},
+				}
+			: {}),
+		...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+			? {
+					google: {
+						clientId: process.env.GOOGLE_CLIENT_ID,
+						clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+					},
+				}
+			: {}),
 	},
 	logger: {
 		disabled: process.env.NODE_ENV === "production",
@@ -333,14 +347,14 @@ const { handler, api } = betterAuth({
 					const host =
 						process.env.NODE_ENV === "development"
 							? "http://localhost:3000"
-							: "https://app.dokploy.com";
+							: (process.env.CLOUD_APP_URL || "https://app.agentready.com");
 					const inviteLink = `${host}/invitation?token=${data.id}`;
 
 					await sendEmail({
 						email: data.email,
 						subject: "Invitation to join organization",
 						text: `
-					<p>You are invited to join ${data.organization.name} on Dokploy. Click the link to accept the invitation: <a href="${inviteLink}">Accept Invitation</a></p>
+					<p>You are invited to join ${data.organization.name} on AgentReady. Click the link to accept the invitation: <a href="${inviteLink}">Accept Invitation</a></p>
 					`,
 					});
 				}
@@ -355,6 +369,11 @@ const { handler, api } = betterAuth({
 			: []),
 	],
 });
+
+const { handler, api } = betterAuthInstance;
+
+/** Full Better Auth instance for Next.js App Router (toNextJsHandler). Use `auth` for Node handler and api helpers. */
+export const authInstance = betterAuthInstance;
 
 const _auth = {
 	handler,

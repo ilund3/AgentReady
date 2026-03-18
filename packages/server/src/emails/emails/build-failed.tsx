@@ -12,6 +12,7 @@ import {
 	Tailwind,
 	Text,
 } from "@react-email/components";
+import { emailBrandLogoUrl } from "../email-brand-logo";
 
 export type TemplateProps = {
 	projectName: string;
@@ -48,17 +49,17 @@ export const BuildFailedEmail = ({
 			>
 				<Body className="bg-white my-auto mx-auto font-sans px-2">
 					<Container className="border border-solid border-[#eaeaea] rounded-lg my-[40px] mx-auto p-[20px] max-w-[465px]">
-						<Section className="mt-[32px]">
-							<Img
-								src={
-									"https://raw.githubusercontent.com/Dokploy/dokploy/refs/heads/canary/apps/dokploy/logo.png"
-								}
-								width="100"
-								height="50"
-								alt="AgentReady"
-								className="my-0 mx-auto"
-							/>
-						</Section>
+						{emailBrandLogoUrl() ? (
+							<Section className="mt-[32px]">
+								<Img
+									src={emailBrandLogoUrl()!}
+									width="100"
+									height="50"
+									alt="AgentReady"
+									className="my-0 mx-auto"
+								/>
+							</Section>
+						) : null}
 						<Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
 							Build failed for <strong>{applicationName}</strong>
 						</Heading>

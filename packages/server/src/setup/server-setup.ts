@@ -291,8 +291,8 @@ const installRequirements = async (
 						`Technical details: ${technicalDetail}`,
 						"",
 						"💡 Hints:",
-						"  • Check that the SSH key you added in Dokploy is the same one installed on the server (e.g. in ~/.ssh/authorized_keys).",
-						"  • Try generating a new SSH key in Dokploy and add only the public key to the server, then try again.",
+						"  • Check that the SSH key you added in the dashboard is the same one installed on the server (e.g. in ~/.ssh/authorized_keys).",
+						"  • Try generating a new SSH key in the dashboard and add only the public key to the server, then try again.",
 						"  • Make sure to follow the instructions on the Setup Server Button on the SSH Keys tab",
 					].join("\n");
 					onData?.(friendlyMessage);

@@ -7,6 +7,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { AGENTREADY_LOGO_SRC } from "@/components/shared/logo";
 
 interface WhitelabelingPreviewProps {
 	config: {
@@ -17,7 +18,7 @@ interface WhitelabelingPreviewProps {
 }
 
 export function WhitelabelingPreview({ config }: WhitelabelingPreviewProps) {
-	const appName = config.appName || "Dokploy";
+	const appName = config.appName || "AgentReady";
 
 	return (
 		<Card className="bg-transparent">
@@ -31,17 +32,15 @@ export function WhitelabelingPreview({ config }: WhitelabelingPreviewProps) {
 				<div className="rounded-lg border overflow-hidden">
 					{/* Simulated sidebar header */}
 					<div className="flex items-center gap-3 p-4 border-b bg-sidebar">
-						{config.logoUrl ? (
-							<img
-								src={config.logoUrl}
-								alt="Preview Logo"
-								className="size-8 rounded-sm object-contain"
-							/>
-						) : (
-							<div className="size-8 rounded-sm flex items-center justify-center bg-primary text-primary-foreground font-bold text-sm">
-								{appName.charAt(0).toUpperCase()}
-							</div>
-						)}
+						<img
+							src={config.logoUrl || AGENTREADY_LOGO_SRC}
+							alt="Preview logo"
+							className={
+								config.logoUrl
+									? "size-8 rounded-sm object-contain"
+									: "size-8 rounded-sm object-contain bg-black p-0.5"
+							}
+						/>
 						<span className="font-semibold text-sm">{appName}</span>
 					</div>
 

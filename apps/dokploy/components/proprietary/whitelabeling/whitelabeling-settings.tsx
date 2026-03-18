@@ -54,7 +54,7 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 const DEFAULT_CSS_TEMPLATE = `/* ============================================
-   Dokploy Default Theme - CSS Variables
+   AgentReady Default Theme - CSS Variables
    Modify these values to customize your instance.
    ============================================ */
 
@@ -288,10 +288,10 @@ export function WhitelabelingSettings() {
 									<FormItem>
 										<FormLabel>Application Name</FormLabel>
 										<FormControl>
-											<Input placeholder="Dokploy" {...field} />
+											<Input placeholder="AgentReady" {...field} />
 										</FormControl>
 										<FormDescription>
-											Replaces "Dokploy" across the entire interface.
+											Replaces the default product name across the entire interface.
 										</FormDescription>
 										<FormMessage />
 									</FormItem>
@@ -306,13 +306,13 @@ export function WhitelabelingSettings() {
 										<FormLabel>Application Description</FormLabel>
 										<FormControl>
 											<Input
-												placeholder="The Open Source alternative to Netlify, Vercel, Heroku."
+												placeholder="Make your products ready for any agent client with MCP server hosting, security, authentication, and analytics."
 												{...field}
 											/>
 										</FormControl>
 										<FormDescription>
 											Tagline shown on the login/onboarding pages. Defaults to
-											the standard Dokploy description if empty.
+											the standard description if empty.
 										</FormDescription>
 										<FormMessage />
 									</FormItem>
@@ -327,7 +327,7 @@ export function WhitelabelingSettings() {
 										<FormLabel>Logo URL</FormLabel>
 										<FormControl>
 											<Input
-												placeholder="https://example.com/logo.svg"
+												placeholder="https://example.com/logo.png"
 												{...field}
 											/>
 										</FormControl>
@@ -348,7 +348,7 @@ export function WhitelabelingSettings() {
 										<FormLabel>Login Page Logo URL</FormLabel>
 										<FormControl>
 											<Input
-												placeholder="https://example.com/login-logo.svg"
+												placeholder="https://example.com/login-logo.png"
 												{...field}
 											/>
 										</FormControl>
@@ -449,10 +449,10 @@ export function WhitelabelingSettings() {
 									<FormItem>
 										<FormLabel>Page Title</FormLabel>
 										<FormControl>
-											<Input placeholder="Dokploy" {...field} />
+											<Input placeholder="AgentReady" {...field} />
 										</FormControl>
 										<FormDescription>
-											Browser tab title. Defaults to "Dokploy" if empty.
+											Browser tab title. Defaults to "AgentReady" if empty.
 										</FormDescription>
 										<FormMessage />
 									</FormItem>

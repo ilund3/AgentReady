@@ -1,16 +1,13 @@
 import { IS_CLOUD, isAdminPresent } from "@dokploy/server";
 import { validateRequest } from "@dokploy/server/lib/auth";
-import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import type { GetServerSidePropsContext } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { type ReactElement, useState } from "react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { OnboardingLayout } from "@/components/layouts/onboarding-layout";
-import { SignInWithGithub } from "@/components/proprietary/auth/sign-in-with-github";
 import { SignInWithGoogle } from "@/components/proprietary/auth/sign-in-with-google";
 import { SignInWithSSO } from "@/components/proprietary/sso/sign-in-with-sso";
 import { AlertBlock } from "@/components/shared/alert-block";
@@ -24,14 +21,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
 	InputOTP,
@@ -43,16 +32,9 @@ import { authClient } from "@/lib/auth-client";
 import { api } from "@/utils/api";
 import { useWhitelabelingPublic } from "@/utils/hooks/use-whitelabeling";
 
-const LoginSchema = z.object({
-	email: z.string().email(),
-	password: z.string().min(8),
-});
-
 const _TwoFactorSchema = z.object({
 	code: z.string().min(6),
 });
-
-type LoginForm = z.infer<typeof LoginSchema>;
 
 interface Props {
 	IS_CLOUD: boolean;
@@ -61,7 +43,6 @@ export default function Home({ IS_CLOUD }: Props) {
 	const router = useRouter();
 	const { config: whitelabeling } = useWhitelabelingPublic();
 	const { data: showSignInWithSSO } = api.sso.showSignInWithSSO.useQuery();
-	const [isLoginLoading, setIsLoginLoading] = useState(false);
 	const [isTwoFactorLoading, setIsTwoFactorLoading] = useState(false);
 	const [isBackupCodeLoading, setIsBackupCodeLoading] = useState(false);
 	const [isTwoFactor, setIsTwoFactor] = useState(false);
@@ -69,44 +50,6 @@ export default function Home({ IS_CLOUD }: Props) {
 	const [twoFactorCode, setTwoFactorCode] = useState("");
 	const [isBackupCodeModalOpen, setIsBackupCodeModalOpen] = useState(false);
 	const [backupCode, setBackupCode] = useState("");
-	const loginForm = useForm<LoginForm>({
-		resolver: zodResolver(LoginSchema),
-		defaultValues: {
-			email: "",
-			password: "",
-		},
-	});
-
-	const onSubmit = async (values: LoginForm) => {
-		setIsLoginLoading(true);
-		try {
-			const { data, error } = await authClient.signIn.email({
-				email: values.email,
-				password: values.password,
-			});
-
-			if (error) {
-				toast.error(error.message);
-				setError(error.message || "An error occurred while logging in");
-				return;
-			}
-
-			// @ts-ignore
-			if (data?.twoFactorRedirect as boolean) {
-				setTwoFactorCode("");
-				setIsTwoFactor(true);
-				toast.info("Please enter your 2FA code");
-				return;
-			}
-
-			toast.success("Logged in successfully");
-			router.push("/dashboard/projects");
-		} catch {
-			toast.error("An error occurred while logging in");
-		} finally {
-			setIsLoginLoading(false);
-		}
-	};
 	const onTwoFactorSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (twoFactorCode.length !== 6) {
@@ -167,49 +110,7 @@ export default function Home({ IS_CLOUD }: Props) {
 
 	const loginContent = (
 		<>
-			{IS_CLOUD && <SignInWithGithub />}
-			{IS_CLOUD && <SignInWithGoogle />}
-			<Form {...loginForm}>
-				<form
-					onSubmit={loginForm.handleSubmit(onSubmit)}
-					className="space-y-4"
-					id="login-form"
-				>
-					<FormField
-						control={loginForm.control}
-						name="email"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Email</FormLabel>
-								<FormControl>
-									<Input placeholder="john@example.com" {...field} />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={loginForm.control}
-						name="password"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Password</FormLabel>
-								<FormControl>
-									<Input
-										type="password"
-										placeholder="Enter your password"
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<Button className="w-full" type="submit" isLoading={isLoginLoading}>
-						Login
-					</Button>
-				</form>
-			</Form>
+			<SignInWithGoogle />
 		</>
 	);
 
@@ -230,7 +131,7 @@ export default function Home({ IS_CLOUD }: Props) {
 					</div>
 				</h1>
 				<p className="text-sm text-muted-foreground">
-					Enter your email and password to sign in
+					Sign in with Google
 				</p>
 			</div>
 			{error && (
@@ -372,24 +273,6 @@ export default function Home({ IS_CLOUD }: Props) {
 						)}
 					</div>
 
-					<div className="mt-4 text-sm flex flex-row justify-center gap-2">
-						{IS_CLOUD ? (
-							<Link
-								className="hover:underline text-muted-foreground"
-								href="/send-reset-password"
-							>
-								Lost your password?
-							</Link>
-						) : (
-							<Link
-								className="hover:underline text-muted-foreground"
-								href="https://docs.agentready.com/docs/core/reset-password"
-								target="_blank"
-							>
-								Lost your password?
-							</Link>
-						)}
-					</div>
 				</div>
 				<div className="p-2" />
 			</CardContent>

@@ -1,5 +1,4 @@
 import { Key, Loader2, ShieldCheck } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DialogAction } from "@/components/shared/dialog-action";
@@ -76,17 +75,8 @@ export function LicenseKeySettings() {
 						</div>
 
 						<p className="text-sm text-muted-foreground">
-							To unlock extra features you need an enterprise license key.
-							Contact us{" "}
-							<Link
-								href="https://dokploy.com/contact"
-								target="_blank"
-								rel="noreferrer"
-								className="underline underline-offset-4"
-							>
-								here
-							</Link>
-							.
+							To unlock extra features you need an enterprise license key. Contact
+							your administrator for support.
 						</p>
 					</div>
 					{enabled ? (

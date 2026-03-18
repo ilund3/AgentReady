@@ -5,13 +5,11 @@ import {
 	BarChartHorizontalBigIcon,
 	Bell,
 	BlocksIcon,
-	BookIcon,
 	BookOpen,
 	BotIcon,
 	Boxes,
 	ChevronRight,
 	ChevronsUpDown,
-	CircleHelp,
 	Clock,
 	CreditCard,
 	Database,
@@ -29,6 +27,7 @@ import {
 	PieChart,
 	Rocket,
 	Server,
+	Settings2,
 	ShieldCheck,
 	Star,
 	Trash2,
@@ -37,7 +36,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
 	Breadcrumb,
@@ -156,79 +155,6 @@ const MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Monitoring",
-			url: "/dashboard/monitoring",
-			icon: BarChartHorizontalBigIcon,
-			// Only enabled in non-cloud environments
-			isEnabled: ({ isCloud }) => !isCloud,
-		},
-		{
-			isSingle: true,
-			title: "Schedules",
-			url: "/dashboard/schedules",
-			icon: Clock,
-			// Only enabled in non-cloud environments
-			isEnabled: ({ isCloud, auth }) =>
-				!isCloud && (auth?.role === "owner" || auth?.role === "admin"),
-		},
-		{
-			isSingle: true,
-			title: "Traefik File System",
-			url: "/dashboard/traefik",
-			icon: GalleryVerticalEnd,
-			// Only enabled for admins and users with access to Traefik files in non-cloud environments
-			isEnabled: ({ auth, isCloud }) =>
-				!!(
-					(auth?.role === "owner" ||
-						auth?.role === "admin" ||
-						auth?.canAccessToTraefikFiles) &&
-					!isCloud
-				),
-		},
-		{
-			isSingle: true,
-			title: "Docker",
-			url: "/dashboard/docker",
-			icon: BlocksIcon,
-			// Only enabled for admins and users with access to Docker in non-cloud environments
-			isEnabled: ({ auth, isCloud }) =>
-				!!(
-					(auth?.role === "owner" ||
-						auth?.role === "admin" ||
-						auth?.canAccessToDocker) &&
-					!isCloud
-				),
-		},
-		{
-			isSingle: true,
-			title: "Swarm",
-			url: "/dashboard/swarm",
-			icon: PieChart,
-			// Only enabled for admins and users with access to Docker in non-cloud environments
-			isEnabled: ({ auth, isCloud }) =>
-				!!(
-					(auth?.role === "owner" ||
-						auth?.role === "admin" ||
-						auth?.canAccessToDocker) &&
-					!isCloud
-				),
-		},
-		{
-			isSingle: true,
-			title: "Requests",
-			url: "/dashboard/requests",
-			icon: Forward,
-			// Only enabled for admins and users with access to Docker in non-cloud environments
-			isEnabled: ({ auth, isCloud }) =>
-				!!(
-					(auth?.role === "owner" ||
-						auth?.role === "admin" ||
-						auth?.canAccessToDocker) &&
-					!isCloud
-				),
-		},
-		{
-			isSingle: true,
 			title: "MCP Inspector",
 			url: "/dashboard/inspector",
 			icon: BotIcon,
@@ -298,6 +224,73 @@ const MENU: Menu = {
 	],
 
 	settings: [
+		{
+			isSingle: true,
+			title: "Schedules",
+			url: "/dashboard/schedules",
+			icon: Clock,
+			isEnabled: ({ isCloud, auth }) =>
+				!isCloud && (auth?.role === "owner" || auth?.role === "admin"),
+		},
+		{
+			isSingle: true,
+			title: "Traefik File System",
+			url: "/dashboard/traefik",
+			icon: GalleryVerticalEnd,
+			isEnabled: ({ auth, isCloud }) =>
+				!!(
+					(auth?.role === "owner" ||
+						auth?.role === "admin" ||
+						auth?.canAccessToTraefikFiles) &&
+					!isCloud
+				),
+		},
+		{
+			isSingle: true,
+			title: "Docker",
+			url: "/dashboard/docker",
+			icon: BlocksIcon,
+			isEnabled: ({ auth, isCloud }) =>
+				!!(
+					(auth?.role === "owner" ||
+						auth?.role === "admin" ||
+						auth?.canAccessToDocker) &&
+					!isCloud
+				),
+		},
+		{
+			isSingle: true,
+			title: "Swarm",
+			url: "/dashboard/swarm",
+			icon: PieChart,
+			isEnabled: ({ auth, isCloud }) =>
+				!!(
+					(auth?.role === "owner" ||
+						auth?.role === "admin" ||
+						auth?.canAccessToDocker) &&
+					!isCloud
+				),
+		},
+		{
+			isSingle: true,
+			title: "Requests",
+			url: "/dashboard/requests",
+			icon: Forward,
+			isEnabled: ({ auth, isCloud }) =>
+				!!(
+					(auth?.role === "owner" ||
+						auth?.role === "admin" ||
+						auth?.canAccessToDocker) &&
+					!isCloud
+				),
+		},
+		{
+			isSingle: true,
+			title: "Monitoring",
+			url: "/dashboard/monitoring",
+			icon: BarChartHorizontalBigIcon,
+			isEnabled: ({ isCloud }) => !isCloud,
+		},
 		{
 			isSingle: true,
 			title: "Web Server",
@@ -446,18 +439,7 @@ const MENU: Menu = {
 		},
 	],
 
-	help: [
-		{
-			name: "Documentation",
-			url: "https://docs.agentready.com/docs/core",
-			icon: BookIcon,
-		},
-		{
-			name: "Support",
-			url: "https://discord.gg/2tBnJ3jDJc",
-			icon: CircleHelp,
-		},
-	],
+	help: [],
 } as const;
 
 /**
@@ -489,9 +471,6 @@ function createMenuForAuthUser(opts: {
 	const helpItems = filterEnabled(MENU.help).map((item) => {
 		if (opts.whitelabeling?.docsUrl && item.name === "Documentation") {
 			return { ...item, url: opts.whitelabeling.docsUrl };
-		}
-		if (opts.whitelabeling?.supportUrl && item.name === "Support") {
-			return { ...item, url: opts.whitelabeling.supportUrl };
 		}
 		return item;
 	});
@@ -907,7 +886,7 @@ export default function Page({ children }: Props) {
 
 	const pathname = usePathname();
 	const { data: auth } = api.user.get.useQuery();
-	const { data: dokployVersion } = api.settings.getDokployVersion.useQuery();
+	const { data: appVersion } = api.settings.getAppVersion.useQuery();
 	const { data: whitelabeling } = api.whitelabeling.get.useQuery(undefined, {
 		staleTime: 5 * 60 * 1000,
 		refetchOnWindowFocus: false,
@@ -926,6 +905,24 @@ export default function Page({ children }: Props) {
 		[...filteredHome, ...filteredSettings],
 		pathname,
 	);
+
+	const isSettingsSubActive = useMemo(
+		() =>
+			filteredSettings.some(
+				(item) =>
+					item.isSingle !== false &&
+					isActiveRoute({ itemUrl: item.url, pathname: pathname ?? "" }),
+			),
+		[filteredSettings, pathname],
+	);
+
+	const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+
+	useEffect(() => {
+		if (isSettingsSubActive) {
+			setSettingsMenuOpen(true);
+		}
+	}, [isSettingsSubActive]);
 
 	if (!isLoaded) {
 		return <div className="w-full h-screen bg-background" />; // Placeholder mientras se carga
@@ -1047,92 +1044,65 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 					<SidebarGroup>
-						<SidebarGroupLabel>Settings</SidebarGroupLabel>
 						<SidebarMenu className="gap-1">
-							{filteredSettings.map((item) => {
-								const isSingle = item.isSingle !== false;
-								const isActive = isSingle
-									? isActiveRoute({ itemUrl: item.url, pathname })
-									: item.items.some((item) =>
-											isActiveRoute({ itemUrl: item.url, pathname }),
-										);
-
-								return (
-									<Collapsible
-										key={item.title}
-										asChild
-										defaultOpen={isActive}
-										className="group/collapsible"
-									>
-										<SidebarMenuItem>
-											{isSingle ? (
-												<SidebarMenuButton
-													asChild
-													tooltip={item.title}
-													className={cn(isActive && "bg-border")}
-												>
-													<Link
-														href={item.url}
-														className="flex w-full items-center gap-2"
-													>
-														{item.icon && (
-															<item.icon
-																className={cn(isActive && "text-primary")}
-															/>
-														)}
-														<span>{item.title}</span>
-													</Link>
-												</SidebarMenuButton>
-											) : (
-												<>
-													<CollapsibleTrigger asChild>
-														<SidebarMenuButton
-															tooltip={item.title}
-															isActive={isActive}
+							<Collapsible
+								open={settingsMenuOpen}
+								onOpenChange={setSettingsMenuOpen}
+								className="group/collapsible"
+							>
+								<SidebarMenuItem>
+									<CollapsibleTrigger asChild>
+										<SidebarMenuButton
+											tooltip="Settings"
+											isActive={isSettingsSubActive}
+											className={cn(isSettingsSubActive && "bg-border")}
+										>
+											<Settings2
+												className={cn(
+													isSettingsSubActive && "text-primary",
+												)}
+											/>
+											<span>Settings</span>
+											<ChevronRight className="ml-auto size-4 shrink-0 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+										</SidebarMenuButton>
+									</CollapsibleTrigger>
+									<CollapsibleContent>
+										<SidebarMenuSub className="mx-0 border-border/60 px-1.5 py-0.5">
+											{filteredSettings.map((item) => {
+												if (item.isSingle === false) return null;
+												const subActive = isActiveRoute({
+													itemUrl: item.url,
+													pathname: pathname ?? "",
+												});
+												return (
+													<SidebarMenuSubItem key={item.title}>
+														<SidebarMenuSubButton
+															asChild
+															isActive={subActive}
+															className={cn(subActive && "bg-border")}
 														>
-															{item.icon && <item.icon />}
-
-															<span>{item.title}</span>
-															{item.items?.length && (
-																<ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-															)}
-														</SidebarMenuButton>
-													</CollapsibleTrigger>
-													<CollapsibleContent>
-														<SidebarMenuSub>
-															{item.items?.map((subItem) => (
-																<SidebarMenuSubItem key={subItem.title}>
-																	<SidebarMenuSubButton
-																		asChild
-																		className={cn(isActive && "bg-border")}
-																	>
-																		<Link
-																			href={subItem.url}
-																			className="flex w-full items-center"
-																		>
-																			{subItem.icon && (
-																				<span className="mr-2">
-																					<subItem.icon
-																						className={cn(
-																							"h-4 w-4 text-muted-foreground",
-																							isActive && "text-primary",
-																						)}
-																					/>
-																				</span>
-																			)}
-																			<span>{subItem.title}</span>
-																		</Link>
-																	</SidebarMenuSubButton>
-																</SidebarMenuSubItem>
-															))}
-														</SidebarMenuSub>
-													</CollapsibleContent>
-												</>
-											)}
-										</SidebarMenuItem>
-									</Collapsible>
-								);
-							})}
+															<Link
+																href={item.url}
+																className="flex w-full items-center gap-2"
+															>
+																{item.icon && (
+																	<item.icon
+																		className={cn(
+																			"h-4 w-4 shrink-0 text-muted-foreground",
+																			subActive && "text-primary",
+																		)}
+																	/>
+																)}
+																<span className="truncate">{item.title}</span>
+															</Link>
+														</SidebarMenuSubButton>
+													</SidebarMenuSubItem>
+												);
+											})}
+										</SidebarMenuSub>
+									</CollapsibleContent>
+								</SidebarMenuItem>
+							</Collapsible>
 						</SidebarMenu>
 					</SidebarGroup>
 					<SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -1173,13 +1143,13 @@ export default function Page({ children }: Props) {
 								{whitelabeling.footerText}
 							</div>
 						)}
-						{dokployVersion && (
+						{appVersion && (
 							<>
 								<div className="px-3 text-xs text-muted-foreground text-center group-data-[collapsible=icon]:hidden">
-									Version {dokployVersion}
+									Version {appVersion}
 								</div>
 								<div className="hidden text-xs text-muted-foreground text-center group-data-[collapsible=icon]:block">
-									{dokployVersion}
+									{appVersion}
 								</div>
 							</>
 						)}

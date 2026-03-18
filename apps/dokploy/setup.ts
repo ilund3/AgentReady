@@ -30,7 +30,7 @@ import {
 		await initializeStandaloneTraefik();
 		await initializeRedis();
 		await initializePostgres();
-		console.log("Dokploy setup completed");
+		console.log("AgentReady setup completed");
 		exit(0);
 	} catch (e) {
 		console.error("Error in dokploy setup", e);

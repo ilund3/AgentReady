@@ -97,7 +97,7 @@ export const sendServerThresholdNotifications = async (
 				],
 				timestamp: date.toISOString(),
 				footer: {
-					text: "Dokploy Server Monitoring Alert",
+					text: "AgentReady Server Monitoring Alert",
 				},
 			});
 		}

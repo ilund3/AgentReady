@@ -38,6 +38,7 @@
     "spawn-rx": "^5.1.2",
     "ws": "^8.18.0",
     "zod": "^3.25.76",
-    "express-rate-limit": "^8.2.1"
+    "express-rate-limit": "^8.2.1",
+    "node-fetch": "^3.3.2"
   }
 }

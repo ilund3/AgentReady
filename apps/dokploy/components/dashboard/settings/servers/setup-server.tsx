@@ -1,6 +1,5 @@
 import copy from "copy-to-clipboard";
-import { CopyIcon, ExternalLinkIcon, ServerIcon, Settings } from "lucide-react";
-import Link from "next/link";
+import { CopyIcon, ServerIcon, Settings } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AlertBlock } from "@/components/shared/alert-block";
@@ -189,13 +188,9 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 										<span className="text-base font-semibold text-primary">
 											Automatic process
 										</span>
-										<Link
-											href="https://docs.dokploy.com/docs/core/remote-servers/instructions#requirements"
-											target="_blank"
-											className="text-primary flex flex-row gap-2"
-										>
-											View Tutorial <ExternalLinkIcon className="size-4" />
-										</Link>
+										<span className="text-sm text-muted-foreground">
+											Follow the steps in your dashboard to complete setup.
+										</span>
 									</div>
 									<div className="flex flex-col gap-2 w-full border rounded-lg p-4">
 										<span className="text-base font-semibold text-primary">

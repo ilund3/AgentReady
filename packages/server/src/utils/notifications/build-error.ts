@@ -152,7 +152,7 @@ export const sendBuildErrorNotifications = async ({
 					],
 					timestamp: date.toISOString(),
 					footer: {
-						text: "Dokploy Build Notification",
+						text: "AgentReady Build Notification",
 					},
 				});
 			}

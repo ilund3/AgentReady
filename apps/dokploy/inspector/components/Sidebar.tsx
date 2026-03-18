@@ -3,9 +3,6 @@ import {
   Play,
   ChevronDown,
   ChevronRight,
-  CircleHelp,
-  Bug,
-  Github,
   Eye,
   EyeOff,
   RotateCcw,
@@ -32,7 +29,7 @@ import {
 import { InspectorConfig } from "@inspector/lib/configurationTypes";
 import { ConnectionStatus } from "@inspector/lib/constants";
 import useTheme from "../lib/hooks/useTheme";
-// Version shown in Inspector UI (integrated into Dokploy)
+// Version shown in Inspector UI (embedded in dashboard)
 const version = "0.21.1";
 import {
   Tooltip,
@@ -881,39 +878,6 @@ const Sidebar = ({
             </SelectContent>
           </Select>
 
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" title="Inspector Documentation" asChild>
-              <a
-                href="https://modelcontextprotocol.io/docs/tools/inspector"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <CircleHelp className="w-4 h-4 text-foreground" />
-              </a>
-            </Button>
-            <Button variant="ghost" title="Debugging Guide" asChild>
-              <a
-                href="https://modelcontextprotocol.io/docs/tools/debugging"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Bug className="w-4 h-4 text-foreground" />
-              </a>
-            </Button>
-            <Button
-              variant="ghost"
-              title="Report bugs or contribute on GitHub"
-              asChild
-            >
-              <a
-                href="https://github.com/modelcontextprotocol/inspector"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Github className="w-4 h-4 text-foreground" />
-              </a>
-            </Button>
-          </div>
         </div>
       </div>
     </div>

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { api } from "@/utils/api";
 
-export const ShowWelcomeDokploy = () => {
+export const ShowWelcomeCloud = () => {
 	const { data } = api.user.get.useQuery();
 	const [open, setOpen] = useState(false);
 
@@ -33,7 +33,7 @@ export const ShowWelcomeDokploy = () => {
 		if (data?.role === "owner") {
 			setOpen(isOpen);
 			if (!isOpen) {
-				localStorage.setItem("hasSeenCloudWelcomeModal", "true"); // Establece el flag al cerrar el modal
+				localStorage.setItem("hasSeenCloudWelcomeModal", "true");
 			}
 		}
 	};

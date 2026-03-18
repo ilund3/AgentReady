@@ -13,18 +13,55 @@ const getSearchParam = (key: string): string | null => {
   }
 };
 
+/** Ensure proxy base is a valid URL (browser requires a scheme). */
+export function normalizeMcpProxyBase(raw: string): string {
+  let t = String(raw ?? "")
+    .trim()
+    .replace(/\/+$/, "");
+  if (!t) return "";
+  if (t.startsWith("//")) t = `http:${t}`;
+  if (/^https?:\/\//i.test(t)) return t;
+  return `http://${t}`;
+}
+
 export const getMCPProxyAddress = (config: InspectorConfig): string => {
-  let proxyFullAddress = config.MCP_PROXY_FULL_ADDRESS.value as string;
+  const proxyFullAddress = normalizeMcpProxyBase(
+    config.MCP_PROXY_FULL_ADDRESS.value as string,
+  );
   if (proxyFullAddress) {
-    proxyFullAddress = proxyFullAddress.replace(/\/+$/, "");
-    return proxyFullAddress;
+    try {
+      new URL(`${proxyFullAddress}/health`);
+      return proxyFullAddress;
+    } catch {
+      /* invalid saved value — use defaults below */
+    }
   }
 
   // Check for proxy port from query params, fallback to default
   const proxyPort =
     getSearchParam("MCP_PROXY_PORT") || DEFAULT_MCP_PROXY_LISTEN_PORT;
 
-  return `${window.location.protocol}//${window.location.hostname}:${proxyPort}`;
+  const { hostname, protocol } = window.location;
+  const isLocalDashboard =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "[::1]";
+
+  // On deployed dashboards (e.g. Railway), same-host:6277 never runs the proxy — it only
+  // runs on the developer's machine. Default to loopback so the browser can reach a
+  // locally running inspector-server (Chrome allows https→http for 127.0.0.1).
+  let fallback: string;
+  if (isLocalDashboard) {
+    fallback = `${protocol}//${hostname}:${proxyPort}`;
+  } else {
+    fallback = `http://127.0.0.1:${proxyPort}`;
+  }
+  try {
+    new URL(`${fallback}/health`);
+    return fallback;
+  } catch {
+    return `http://127.0.0.1:${proxyPort}`;
+  }
 };
 
 export const getMCPServerRequestTimeout = (config: InspectorConfig): number => {

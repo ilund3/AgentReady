@@ -15,7 +15,7 @@ import { authClient } from "@/lib/auth-client";
 
 const LINKING_CALLBACK_URL = "/dashboard/settings/profile";
 
-const TRUSTED_PROVIDERS = ["google", "github"] as const;
+const TRUSTED_PROVIDERS = ["google"] as const;
 type SocialProvider = (typeof TRUSTED_PROVIDERS)[number];
 
 type AccountItem = {
@@ -120,7 +120,7 @@ export function LinkingAccount() {
 								Linking account
 							</CardTitle>
 							<CardDescription>
-								Link your Google or GitHub account to sign in with them.
+								Link your Google account to sign in with it.
 							</CardDescription>
 						</div>
 					</div>

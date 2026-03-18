@@ -3,7 +3,7 @@ import path from "path";
 import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
-// Built output goes to Dokploy public so it is served at /inspector/ in the same app
+// Built output goes to dashboard public so it is served at /inspector/ in the same app
 export default defineConfig({
   plugins: [react()],
   base: "/inspector/",

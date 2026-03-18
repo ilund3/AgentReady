@@ -1,6 +1,6 @@
 import { format } from "date-fns";
+import { GitBranch } from "lucide-react";
 import { useEffect, useState } from "react";
-import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import {
@@ -64,14 +64,14 @@ export const AddGithubProvider = () => {
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			<DialogTrigger asChild>
 				<Button variant="secondary" className="flex items-center space-x-1">
-					<GithubIcon className="text-current fill-current" />
-					<span>Github</span>
+					<GitBranch className="h-4 w-4 text-current" />
+					<span>Git (repository)</span>
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-2xl ">
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
-						Github Provider <GithubIcon className="size-5" />
+						Git repository provider <GitBranch className="size-5" />
 					</DialogTitle>
 				</DialogHeader>
 
