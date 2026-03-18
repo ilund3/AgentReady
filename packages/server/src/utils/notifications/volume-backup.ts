@@ -107,51 +107,51 @@ export const sendVolumeBackupNotifications = async ({
 			await sendDiscordNotification(discord, {
 				title:
 					type === "success"
-						? decorate(">", "`✅` Volume Backup Successful")
-						: decorate(">", "`❌` Volume Backup Failed"),
+						? decorate(">", "`[OK]` Volume Backup Successful")
+						: decorate(">", "`[FAILED]` Volume Backup Failed"),
 				color: type === "success" ? 0x57f287 : 0xed4245,
 				fields: [
 					{
-						name: decorate("`🛠️`", "Project"),
+						name: decorate("`[TOOL]`", "Project"),
 						value: projectName,
 						inline: true,
 					},
 					{
-						name: decorate("`⚙️`", "Application"),
+						name: decorate("`[GEAR]`", "Application"),
 						value: applicationName,
 						inline: true,
 					},
 					{
-						name: decorate("`💾`", "Volume Name"),
+						name: decorate("`[SAVE]`", "Volume Name"),
 						value: volumeName,
 						inline: true,
 					},
 					{
-						name: decorate("`🔧`", "Service Type"),
+						name: decorate("`[SETUP]`", "Service Type"),
 						value: serviceType,
 						inline: true,
 					},
 					...(backupSize
 						? [
 								{
-									name: decorate("`📊`", "Backup Size"),
+									name: decorate("`[CHART]`", "Backup Size"),
 									value: backupSize,
 									inline: true,
 								},
 							]
 						: []),
 					{
-						name: decorate("`📅`", "Date"),
+						name: decorate("`[DATE]`", "Date"),
 						value: `<t:${unixDate}:D>`,
 						inline: true,
 					},
 					{
-						name: decorate("`⌚`", "Time"),
+						name: decorate("`[TIME]`", "Time"),
 						value: `<t:${unixDate}:t>`,
 						inline: true,
 					},
 					{
-						name: decorate("`❓`", "Type"),
+						name: decorate("`[?]`", "Type"),
 						value: type
 							.replace("error", "Failed")
 							.replace("success", "Successful"),
@@ -160,7 +160,7 @@ export const sendVolumeBackupNotifications = async ({
 					...(type === "error" && errorMessage
 						? [
 								{
-									name: decorate("`⚠️`", "Error Message"),
+									name: decorate("`[WARN]`", "Error Message"),
 									value: `\`\`\`${errorMessage}\`\`\``,
 								},
 							]
@@ -180,16 +180,16 @@ export const sendVolumeBackupNotifications = async ({
 			await sendGotifyNotification(
 				gotify,
 				decorate(
-					type === "success" ? "✅" : "❌",
+					type === "success" ? "[OK]" : "[FAILED]",
 					`Volume Backup ${type === "success" ? "Successful" : "Failed"}`,
 				),
-				`${decorate("🛠️", `Project: ${projectName}`)}` +
-					`${decorate("⚙️", `Application: ${applicationName}`)}` +
-					`${decorate("💾", `Volume Name: ${volumeName}`)}` +
-					`${decorate("🔧", `Service Type: ${serviceType}`)}` +
-					`${backupSize ? decorate("📊", `Backup Size: ${backupSize}`) : ""}` +
-					`${decorate("🕒", `Date: ${date.toLocaleString()}`)}` +
-					`${type === "error" && errorMessage ? decorate("❌", `Error:\n${errorMessage}`) : ""}`,
+				`${decorate("[TOOL]", `Project: ${projectName}`)}` +
+					`${decorate("[GEAR]", `Application: ${applicationName}`)}` +
+					`${decorate("[SAVE]", `Volume Name: ${volumeName}`)}` +
+					`${decorate("[SETUP]", `Service Type: ${serviceType}`)}` +
+					`${backupSize ? decorate("[CHART]", `Backup Size: ${backupSize}`) : ""}` +
+					`${decorate("[CLOCK]", `Date: ${date.toLocaleString()}`)}` +
+					`${type === "error" && errorMessage ? decorate("[FAILED]", `Error:\n${errorMessage}`) : ""}`,
 			);
 		}
 
@@ -199,20 +199,20 @@ export const sendVolumeBackupNotifications = async ({
 				`Volume Backup ${type === "success" ? "Successful" : "Failed"}`,
 				`${type === "success" ? "white_check_mark" : "x"}`,
 				"",
-				`🛠️Project: ${projectName}\n` +
-					`⚙️Application: ${applicationName}\n` +
-					`💾Volume Name: ${volumeName}\n` +
-					`🔧Service Type: ${serviceType}\n` +
-					`${backupSize ? `📊Backup Size: ${backupSize}\n` : ""}` +
-					`🕒Date: ${date.toLocaleString()}\n` +
-					`${type === "error" && errorMessage ? `❌Error:\n${errorMessage}` : ""}`,
+				`[TOOL]Project: ${projectName}\n` +
+					`[GEAR]Application: ${applicationName}\n` +
+					`[SAVE]Volume Name: ${volumeName}\n` +
+					`[SETUP]Service Type: ${serviceType}\n` +
+					`${backupSize ? `[CHART]Backup Size: ${backupSize}\n` : ""}` +
+					`[CLOCK]Date: ${date.toLocaleString()}\n` +
+					`${type === "error" && errorMessage ? `[FAILED]Error:\n${errorMessage}` : ""}`,
 			);
 		}
 
 		if (telegram) {
 			const isError = type === "error" && errorMessage;
 
-			const statusEmoji = type === "success" ? "✅" : "❌";
+			const statusEmoji = type === "success" ? "[OK]" : "[FAILED]";
 			const typeStatus = type === "success" ? "Successful" : "Failed";
 			const errorMsg = isError
 				? `\n\n<b>Error:</b>\n<pre>${errorMessage}</pre>`
@@ -321,8 +321,8 @@ export const sendVolumeBackupNotifications = async ({
 			await sendTeamsNotification(teams, {
 				title:
 					type === "success"
-						? "✅ Volume Backup Successful"
-						: "❌ Volume Backup Failed",
+						? "[OK] Volume Backup Successful"
+						: "[FAILED] Volume Backup Failed",
 				facts,
 			});
 		}

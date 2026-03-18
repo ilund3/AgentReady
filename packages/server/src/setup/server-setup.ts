@@ -67,13 +67,13 @@ export const serverSetup = async (
 		const isBuildServer = server.serverType === "build";
 		onData?.(
 			isBuildServer
-				? "\nInstalling Build Server Dependencies: ✅\n"
-				: "\nInstalling Server Dependencies: ✅\n",
+				? "\nInstalling Build Server Dependencies: [OK]\n"
+				: "\nInstalling Server Dependencies: [OK]\n",
 		);
 		await installRequirements(serverId, onData);
 
 		if (IS_CLOUD) {
-			onData?.("\nConfiguring Monitoring: 🔄\n");
+			onData?.("\nConfiguring Monitoring: [RELOAD]\n");
 
 			const baseUrl = await getDokployUrl();
 			const token = generateToken();
@@ -92,17 +92,17 @@ export const serverSetup = async (
 			});
 
 			await setupMonitoring(serverId);
-			onData?.("\nMonitoring Configured: ✅\n");
+			onData?.("\nMonitoring Configured: [OK]\n");
 		}
 
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 
-		onData?.("\nSetup Server: ✅\n");
+		onData?.("\nSetup Server: [OK]\n");
 	} catch (err) {
 		console.log(err);
 
 		await updateDeploymentStatus(deployment.deploymentId, "error");
-		onData?.(`${err} ❌\n`);
+		onData?.(`${err} [FAILED]\n`);
 	}
 };
 
@@ -116,7 +116,7 @@ CURRENT_USER=$USER
 
 echo "Installing requirements for: OS: $OS_TYPE"
 if [ $EUID != 0 ]; then
-	echo "Please run this script as root or with sudo ❌"
+	echo "Please run this script as root or with sudo [FAILED]"
 	exit
 fi
 
@@ -249,7 +249,7 @@ const installRequirements = async (
 	const client = new Client();
 	const server = await findServerById(serverId);
 	if (!server.sshKeyId) {
-		onData?.("❌ No SSH Key found, please assign one to this server");
+		onData?.("[FAILED] No SSH Key found, please assign one to this server");
 		throw new Error("No SSH Key found");
 	}
 
@@ -284,13 +284,13 @@ const installRequirements = async (
 					const technicalDetail = `Error: ${err.message} ${err.level}`;
 					const friendlyMessage = [
 						"",
-						"❌ Couldn't connect to your server — the SSH key was not accepted.",
+						"[FAILED] Couldn't connect to your server — the SSH key was not accepted.",
 						"",
 						"This usually means the key doesn't match what's on the server, or the key format is invalid.",
 						"",
 						`Technical details: ${technicalDetail}`,
 						"",
-						"💡 Hints:",
+						"[TIP] Hints:",
 						"  • Check that the SSH key you added in the dashboard is the same one installed on the server (e.g. in ~/.ssh/authorized_keys).",
 						"  • Try generating a new SSH key in the dashboard and add only the public key to the server, then try again.",
 						"  • Make sure to follow the instructions on the Setup Server Button on the SSH Keys tab",
@@ -305,13 +305,13 @@ const installRequirements = async (
 					const technicalDetail = `${err.message} ${err.level ?? ""}`.trim();
 					const friendlyMessage = [
 						"",
-						"❌ Couldn't connect to your server.",
+						"[FAILED] Couldn't connect to your server.",
 						"",
 						"The connection failed before setup could run. Common causes: wrong IP or port, firewall blocking access, or the server is offline.",
 						"",
 						`Technical details: ${technicalDetail}`,
 						"",
-						"💡 Hints:",
+						"[TIP] Hints:",
 						"  • Check that the server IP address and SSH port are correct and the server is powered on.",
 						"  • If the server is in a private network, ensure Dokploy can reach it (VPN, firewall rules, or correct security groups).",
 						"  • Make sure the SSH port (usually 22) is open and the SSH service is running on the server.",
@@ -349,20 +349,20 @@ const setupDirectories = () => {
 const setupMainDirectory = () => `
 	# Check if the /etc/dokploy directory exists
 	if [ -d /etc/dokploy ]; then
-		echo "/etc/dokploy already exists ✅"
+		echo "/etc/dokploy already exists [OK]"
 	else
 		# Create the /etc/dokploy directory
 		mkdir -p /etc/dokploy
 		chmod 777 /etc/dokploy
 
-		echo "Directory /etc/dokploy created ✅"
+		echo "Directory /etc/dokploy created [OK]"
 	fi
 `;
 
 export const setupSwarm = () => `
 		# Check if the node is already part of a Docker Swarm
 		if docker info | grep -q 'Swarm: active'; then
-			echo "Already part of a Docker Swarm ✅"
+			echo "Already part of a Docker Swarm [OK]"
 		else
 			# Get IP address
 			get_ip() {
@@ -412,20 +412,20 @@ export const setupSwarm = () => `
 
 			# Initialize Docker Swarm
 			docker swarm init --advertise-addr \$advertise_addr
-			echo "Swarm initialized ✅"
+			echo "Swarm initialized [OK]"
 		fi
 	`;
 
 const setupNetwork = () => `
 	# Check if the dokploy-network already exists
 	if docker network ls | grep -q 'dokploy-network'; then
-		echo "Network dokploy-network already exists ✅"
+		echo "Network dokploy-network already exists [OK]"
 	else
 		# Create the dokploy-network if it doesn't exist
 		if docker network create --driver overlay --attachable dokploy-network; then
-			echo "Network created ✅"
+			echo "Network created [OK]"
 		else
-			echo "Failed to create dokploy-network ❌" >&2
+			echo "Failed to create dokploy-network [FAILED]" >&2
 			exit 1
 		fi
 	fi
@@ -622,7 +622,7 @@ const createTraefikConfig = () => {
 		chmod 600 "/etc/dokploy/traefik/dynamic/acme.json"
 	fi
 	if [ -f "/etc/dokploy/traefik/traefik.yml" ]; then
-		echo "Traefik config already exists ✅"
+		echo "Traefik config already exists [OK]"
 	else
 		echo "${config}" > /etc/dokploy/traefik/traefik.yml
 	fi
@@ -635,7 +635,7 @@ const createDefaultMiddlewares = () => {
 	const config = getDefaultMiddlewares();
 	const command = `
 	if [ -f "/etc/dokploy/traefik/dynamic/middlewares.yml" ]; then
-		echo "Middlewares config already exists ✅"
+		echo "Middlewares config already exists [OK]"
 	else
 		echo "${config}" > /etc/dokploy/traefik/dynamic/middlewares.yml
 	fi
@@ -645,11 +645,11 @@ const createDefaultMiddlewares = () => {
 
 export const installRClone = () => `
     if command_exists rclone; then
-		echo "RClone already installed ✅"
+		echo "RClone already installed [OK]"
 	else
 		curl https://rclone.org/install.sh | sudo bash
 		RCLONE_VERSION=$(rclone --version | head -n 1 | awk '{print $2}' | sed 's/^v//')
-		echo "RClone version $RCLONE_VERSION installed ✅"
+		echo "RClone version $RCLONE_VERSION installed [OK]"
 	fi
 `;
 
@@ -660,11 +660,11 @@ export const createTraefikInstance = () => {
 			echo "Migrating Traefik to Standalone..."
 			docker service rm dokploy-traefik
 			sleep 8
-			echo "Traefik migrated to Standalone ✅"
+			echo "Traefik migrated to Standalone [OK]"
 		fi
 
 		if docker inspect dokploy-traefik > /dev/null 2>&1; then
-			echo "Traefik already exists ✅"
+			echo "Traefik already exists [OK]"
 		else
 			# Create the dokploy-traefik container
 			TRAEFIK_VERSION=${TRAEFIK_VERSION}
@@ -680,7 +680,7 @@ export const createTraefikInstance = () => {
 				traefik:v$TRAEFIK_VERSION
 
 			docker network connect dokploy-network dokploy-traefik;
-			echo "Traefik version $TRAEFIK_VERSION installed ✅"
+			echo "Traefik version $TRAEFIK_VERSION installed [OK]"
 		fi
 	`;
 
@@ -689,21 +689,21 @@ export const createTraefikInstance = () => {
 
 const installNixpacks = () => `
 	if command_exists nixpacks; then
-		echo "Nixpacks already installed ✅"
+		echo "Nixpacks already installed [OK]"
 	else
 	    export NIXPACKS_VERSION=1.41.0
         bash -c "$(curl -fsSL https://nixpacks.com/install.sh)"
-		echo "Nixpacks version $NIXPACKS_VERSION installed ✅"
+		echo "Nixpacks version $NIXPACKS_VERSION installed [OK]"
 	fi
 `;
 
 const installRailpack = () => `
 	if command_exists railpack; then
-		echo "Railpack already installed ✅"
+		echo "Railpack already installed [OK]"
 	else
 	    export RAILPACK_VERSION=0.15.4
 		bash -c "$(curl -fsSL https://railpack.com/install.sh)"
-		echo "Railpack version $RAILPACK_VERSION installed ✅"
+		echo "Railpack version $RAILPACK_VERSION installed [OK]"
 	fi
 `;
 
@@ -713,10 +713,10 @@ const installBuildpacks = () => `
 		SUFFIX="-arm64"
 	fi
 	if command_exists pack; then
-		echo "Buildpacks already installed ✅"
+		echo "Buildpacks already installed [OK]"
 	else
 		BUILDPACKS_VERSION=0.39.1
 		curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.39.1/pack-v$BUILDPACKS_VERSION-linux$SUFFIX.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack
-		echo "Buildpacks version $BUILDPACKS_VERSION installed ✅"
+		echo "Buildpacks version $BUILDPACKS_VERSION installed [OK]"
 	fi
 `;

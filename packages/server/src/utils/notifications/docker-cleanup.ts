@@ -86,26 +86,26 @@ export const sendDockerCleanupNotifications = async (
 					`${discord.decoration ? decoration : ""} ${text}`.trim();
 
 				await sendDiscordNotification(discord, {
-					title: decorate(">", "`✅` Docker Cleanup"),
+					title: decorate(">", "`[OK]` Docker Cleanup"),
 					color: 0x57f287,
 					fields: [
 						{
-							name: decorate("`📅`", "Date"),
+							name: decorate("`[DATE]`", "Date"),
 							value: `<t:${unixDate}:D>`,
 							inline: true,
 						},
 						{
-							name: decorate("`⌚`", "Time"),
+							name: decorate("`[TIME]`", "Time"),
 							value: `<t:${unixDate}:t>`,
 							inline: true,
 						},
 						{
-							name: decorate("`❓`", "Type"),
+							name: decorate("`[?]`", "Type"),
 							value: "Successful",
 							inline: true,
 						},
 						{
-							name: decorate("`📜`", "Message"),
+							name: decorate("`[DOC]`", "Message"),
 							value: `\`\`\`${message}\`\`\``,
 						},
 					],
@@ -121,9 +121,9 @@ export const sendDockerCleanupNotifications = async (
 					`${gotify.decoration ? decoration : ""} ${text}\n`;
 				await sendGotifyNotification(
 					gotify,
-					decorate("✅", "Docker Cleanup"),
-					`${decorate("🕒", `Date: ${date.toLocaleString()}`)}` +
-						`${decorate("📜", `Message:\n${message}`)}`,
+					decorate("[OK]", "Docker Cleanup"),
+					`${decorate("[CLOCK]", `Date: ${date.toLocaleString()}`)}` +
+						`${decorate("[DOC]", `Message:\n${message}`)}`,
 				);
 			}
 
@@ -133,14 +133,14 @@ export const sendDockerCleanupNotifications = async (
 					"Docker Cleanup",
 					"white_check_mark",
 					"",
-					`🕒Date: ${date.toLocaleString()}\n` + `📜Message:\n${message}`,
+					`[CLOCK]Date: ${date.toLocaleString()}\n` + `[DOC]Message:\n${message}`,
 				);
 			}
 
 			if (telegram) {
 				await sendTelegramNotification(
 					telegram,
-					`<b>✅ Docker Cleanup</b>\n\n<b>Message:</b> ${message}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}`,
+					`<b>[OK] Docker Cleanup</b>\n\n<b>Message:</b> ${message}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}`,
 				);
 			}
 
@@ -200,7 +200,7 @@ export const sendDockerCleanupNotifications = async (
 						header: {
 							title: {
 								tag: "plain_text",
-								content: "✅ Docker Cleanup",
+								content: "[OK] Docker Cleanup",
 							},
 							subtitle: {
 								tag: "plain_text",
@@ -268,7 +268,7 @@ export const sendDockerCleanupNotifications = async (
 
 			if (teams) {
 				await sendTeamsNotification(teams, {
-					title: "✅ Docker Cleanup",
+					title: "[OK] Docker Cleanup",
 					facts: [
 						{ name: "Date", value: format(date, "PP pp") },
 						{ name: "Message", value: message },

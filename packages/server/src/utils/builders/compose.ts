@@ -26,11 +26,11 @@ export const getBuildComposeCommand = async (compose: ComposeNested) => {
 	const newCompose = await writeDomainsToCompose(compose, domains);
 	const logContent = `
 App Name: ${appName}
-Build Compose 🐳
-Detected: ${mounts.length} mounts 📂
+Build Compose [DOCKER]
+Detected: ${mounts.length} mounts [DIR]
 Command: docker ${command}
-Source Type: docker ${sourceType} ✅
-Compose Type: ${composeType} ✅`;
+Source Type: docker ${sourceType} [OK]
+Compose Type: ${composeType} [OK]`;
 
 	const logBox = boxen(logContent, {
 		padding: {
@@ -54,12 +54,12 @@ Compose Type: ${composeType} ✅`;
 		cd "${projectPath}";
 
 		${compose.isolatedDeployment ? `docker network inspect ${compose.appName} >/dev/null 2>&1 || docker network create ${compose.composeType === "stack" ? "--driver overlay" : ""} --attachable ${compose.appName}` : ""}
-		env -i PATH="$PATH" ${exportEnvCommand} docker ${command.split(" ").join(" ")} 2>&1 || { echo "Error: ❌ Docker command failed"; exit 1; }
+		env -i PATH="$PATH" ${exportEnvCommand} docker ${command.split(" ").join(" ")} 2>&1 || { echo "Error: [FAILED] Docker command failed"; exit 1; }
 		${compose.isolatedDeployment ? `docker network connect ${compose.appName} $(docker ps --filter "name=dokploy-traefik" -q) >/dev/null 2>&1` : ""}
 	
-		echo "Docker Compose Deployed: ✅";
+		echo "Docker Compose Deployed: [OK]";
 	} || {
-		echo "Error: ❌ Script execution failed";
+		echo "Error: [FAILED] Script execution failed";
 		exit 1
 	}
 	`;

@@ -108,42 +108,42 @@ export const sendDatabaseBackupNotifications = async ({
 				await sendDiscordNotification(discord, {
 					title:
 						type === "success"
-							? decorate(">", "`✅` Database Backup Successful")
-							: decorate(">", "`❌` Database Backup Failed"),
+							? decorate(">", "`[OK]` Database Backup Successful")
+							: decorate(">", "`[FAILED]` Database Backup Failed"),
 					color: type === "success" ? 0x57f287 : 0xed4245,
 					fields: [
 						{
-							name: decorate("`🛠️`", "Project"),
+							name: decorate("`[TOOL]`", "Project"),
 							value: projectName,
 							inline: true,
 						},
 						{
-							name: decorate("`⚙️`", "Application"),
+							name: decorate("`[GEAR]`", "Application"),
 							value: applicationName,
 							inline: true,
 						},
 						{
-							name: decorate("`❔`", "Database"),
+							name: decorate("`[?]`", "Database"),
 							value: databaseType,
 							inline: true,
 						},
 						{
-							name: decorate("`📂`", "Database Name"),
+							name: decorate("`[DIR]`", "Database Name"),
 							value: databaseName,
 							inline: true,
 						},
 						{
-							name: decorate("`📅`", "Date"),
+							name: decorate("`[DATE]`", "Date"),
 							value: `<t:${unixDate}:D>`,
 							inline: true,
 						},
 						{
-							name: decorate("`⌚`", "Time"),
+							name: decorate("`[TIME]`", "Time"),
 							value: `<t:${unixDate}:t>`,
 							inline: true,
 						},
 						{
-							name: decorate("`❓`", "Type"),
+							name: decorate("`[?]`", "Type"),
 							value: type
 								.replace("error", "Failed")
 								.replace("success", "Successful"),
@@ -152,7 +152,7 @@ export const sendDatabaseBackupNotifications = async ({
 						...(type === "error" && errorMessage
 							? [
 									{
-										name: decorate("`⚠️`", "Error Message"),
+										name: decorate("`[WARN]`", "Error Message"),
 										value: `\`\`\`${errorMessage}\`\`\``,
 									},
 								]
@@ -172,15 +172,15 @@ export const sendDatabaseBackupNotifications = async ({
 				await sendGotifyNotification(
 					gotify,
 					decorate(
-						type === "success" ? "✅" : "❌",
+						type === "success" ? "[OK]" : "[FAILED]",
 						`Database Backup ${type === "success" ? "Successful" : "Failed"}`,
 					),
-					`${decorate("🛠️", `Project: ${projectName}`)}` +
-						`${decorate("⚙️", `Application: ${applicationName}`)}` +
-						`${decorate("❔", `Type: ${databaseType}`)}` +
-						`${decorate("📂", `Database Name: ${databaseName}`)}` +
-						`${decorate("🕒", `Date: ${date.toLocaleString()}`)}` +
-						`${type === "error" && errorMessage ? decorate("❌", `Error:\n${errorMessage}`) : ""}`,
+					`${decorate("[TOOL]", `Project: ${projectName}`)}` +
+						`${decorate("[GEAR]", `Application: ${applicationName}`)}` +
+						`${decorate("[?]", `Type: ${databaseType}`)}` +
+						`${decorate("[DIR]", `Database Name: ${databaseName}`)}` +
+						`${decorate("[CLOCK]", `Date: ${date.toLocaleString()}`)}` +
+						`${type === "error" && errorMessage ? decorate("[FAILED]", `Error:\n${errorMessage}`) : ""}`,
 				);
 			}
 
@@ -190,19 +190,19 @@ export const sendDatabaseBackupNotifications = async ({
 					`Database Backup ${type === "success" ? "Successful" : "Failed"}`,
 					`${type === "success" ? "white_check_mark" : "x"}`,
 					"",
-					`🛠Project: ${projectName}\n` +
-						`⚙️Application: ${applicationName}\n` +
-						`❔Type: ${databaseType}\n` +
-						`📂Database Name: ${databaseName}` +
-						`🕒Date: ${date.toLocaleString()}\n` +
-						`${type === "error" && errorMessage ? `❌Error:\n${errorMessage}` : ""}`,
+					`[TOOL]Project: ${projectName}\n` +
+						`[GEAR]Application: ${applicationName}\n` +
+						`[?]Type: ${databaseType}\n` +
+						`[DIR]Database Name: ${databaseName}` +
+						`[CLOCK]Date: ${date.toLocaleString()}\n` +
+						`${type === "error" && errorMessage ? `[FAILED]Error:\n${errorMessage}` : ""}`,
 				);
 			}
 
 			if (telegram) {
 				const isError = type === "error" && errorMessage;
 
-				const statusEmoji = type === "success" ? "✅" : "❌";
+				const statusEmoji = type === "success" ? "[OK]" : "[FAILED]";
 				const typeStatus = type === "success" ? "Successful" : "Failed";
 				const errorMsg = isError
 					? `\n\n<b>Error:</b>\n<pre>${errorMessage}</pre>`
@@ -319,8 +319,8 @@ export const sendDatabaseBackupNotifications = async ({
 								tag: "plain_text",
 								content:
 									type === "success"
-										? "✅ Database Backup Successful"
-										: "❌ Database Backup Failed",
+										? "[OK] Database Backup Successful"
+										: "[FAILED] Database Backup Failed",
 							},
 							subtitle: {
 								tag: "plain_text",
@@ -432,8 +432,8 @@ export const sendDatabaseBackupNotifications = async ({
 				await sendTeamsNotification(teams, {
 					title:
 						type === "success"
-							? "✅ Database Backup Successful"
-							: "❌ Database Backup Failed",
+							? "[OK] Database Backup Successful"
+							: "[FAILED] Database Backup Failed",
 					facts,
 				});
 			}

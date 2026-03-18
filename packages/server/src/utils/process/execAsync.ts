@@ -204,18 +204,18 @@ export const execAsyncRemote = async (
 					const technicalDetail = `Error: ${err.message} ${err.level}`;
 					const friendlyMessage = [
 						"",
-						"❌ Couldn't connect to your server — the SSH key was not accepted.",
+						"[FAILED] Couldn't connect to your server — the SSH key was not accepted.",
 						"",
 						"This usually means the key doesn't match what's on the server, or the key format is invalid.",
 						"",
 						`Technical details: ${technicalDetail}`,
 						"",
-						"💡 Hints:",
+						"[TIP] Hints:",
 						"  • Check that the SSH key you added in the dashboard is the same one installed on the server (e.g. in ~/.ssh/authorized_keys).",
 						"  • Try generating a new SSH key in the dashboard and add only the public key to the server, then try again.",
 						"  • Make sure to follow the instructions on the Setup Server Button on the SSH Keys tab and then click on deployments tab and check the logs for more details.",
 					].join("\n");
-					const errorMsg = `Authentication failed: Invalid SSH private key. ❌ Error: ${err.message} ${err.level}`;
+					const errorMsg = `Authentication failed: Invalid SSH private key. [FAILED] Error: ${err.message} ${err.level}`;
 					onData?.(friendlyMessage);
 					reject(
 						new ExecError(

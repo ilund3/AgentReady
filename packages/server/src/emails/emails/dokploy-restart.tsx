@@ -56,7 +56,7 @@ export const ServerRestartEmail = ({
 							Hello,
 						</Text>
 						<Text className="text-black text-[14px] leading-[24px]">
-							Your AgentReady server was restarted ✅
+							Your AgentReady server was restarted [OK]
 						</Text>
 
 						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#F4F4F5] rounded-lg p-2">

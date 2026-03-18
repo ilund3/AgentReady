@@ -34,14 +34,14 @@ export const restoreVolume = async (
 	echo "Downloading backup from S3..."
 	mkdir -p ${volumeBackupPath}
 	${downloadCommand}
-	echo "Download completed ✅"
+	echo "Download completed [OK]"
 	echo "Creating new volume and restoring data..."
 	docker run --rm \
 		-v ${volumeName}:/volume_data \
 		-v ${volumeBackupPath}:/backup \
 		ubuntu \
 		bash -c "cd /volume_data && tar xvf /backup/${backupFileName} ."
-	echo "Volume restore completed ✅"
+	echo "Volume restore completed [OK]"
 	`;
 
 	// Function to check if volume exists and get containers using it
@@ -66,13 +66,13 @@ export const restoreVolume = async (
 			${baseRestoreCommand}
 		else
 			echo ""
-			echo "⚠️  WARNING: Cannot restore volume as it is currently in use!"
+			echo "[WARN]  WARNING: Cannot restore volume as it is currently in use!"
 			echo ""
-			echo "📋 The following containers are using volume '${volumeName}':"
+			echo "[CLIPBOARD] The following containers are using volume '${volumeName}':"
 			echo ""
 			
 			echo "$CONTAINERS_USING_VOLUME" | while IFS='|' read container_id container_name container_state labels; do
-				echo "   🐳 Container: $container_name ($container_id)"
+				echo "   [DOCKER] Container: $container_name ($container_id)"
 				echo "      Status: $container_state"
 				
 				# Determine container type
@@ -89,12 +89,12 @@ export const restoreVolume = async (
 			done
 			
 			echo ""
-			echo "🔧 To restore this volume, please:"
+			echo "[SETUP] To restore this volume, please:"
 			echo "   1. Stop all containers/services using this volume"
 			echo "   2. Remove the existing volume: docker volume rm ${volumeName}"
 			echo "   3. Run the restore operation again"
 			echo ""
-			echo "❌ Volume restore aborted - volume is in use"
+			echo "[FAILED] Volume restore aborted - volume is in use"
 			
 			exit 1
 		fi

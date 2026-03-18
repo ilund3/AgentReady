@@ -13,7 +13,7 @@ export const getCreateComposeFileCommand = (compose: Compose) => {
 		rm -rf ${outputPath};
 		mkdir -p ${outputPath};
 		echo "${encodedContent}" | base64 -d > "${filePath}";
-		echo "File 'docker-compose.yml' created: ✅";
+		echo "File 'docker-compose.yml' created: [OK]";
 	`;
 	return bashCommand;
 };

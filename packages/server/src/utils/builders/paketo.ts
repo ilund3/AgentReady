@@ -33,10 +33,10 @@ export const getPaketoCommand = (application: ApplicationNested) => {
 	const bashCommand = `
 echo "Starting Paketo build..." ;
 ${command} || { 
-  echo "❌ Paketo build failed" ;
+  echo "[FAILED] Paketo build failed" ;
   exit 1;
 }
-echo "✅ Paketo build completed." ;
+echo "[OK] Paketo build completed." ;
 		`;
 
 	return bashCommand;

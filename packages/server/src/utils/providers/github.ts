@@ -143,7 +143,7 @@ export const cloneGithubRepository = async ({
 	const { APPLICATIONS_PATH, COMPOSE_PATH } = paths(!!serverId);
 
 	if (!githubId) {
-		command += `echo "Error: ❌ Github Provider not found"; exit 1;`;
+		command += `echo "Error: [FAILED] Github Provider not found"; exit 1;`;
 
 		return command;
 	}
@@ -166,7 +166,7 @@ export const cloneGithubRepository = async ({
 	command += `mkdir -p ${outputPath};`;
 	const cloneUrl = `https://oauth2:${token}@${repoclone}`;
 
-	command += `echo "Cloning Repo ${repoclone} to ${outputPath}: ✅";`;
+	command += `echo "Cloning Repo ${repoclone} to ${outputPath}: [OK]";`;
 	command += `git clone --branch ${branch} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} ${cloneUrl} ${outputPath} --progress;`;
 
 	return command;

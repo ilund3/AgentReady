@@ -97,7 +97,7 @@ export const initializeStandaloneTraefik = async ({
 	try {
 		await docker.pull(imageName);
 		await new Promise((resolve) => setTimeout(resolve, 3000));
-		console.log("Traefik Image Pulled ✅");
+		console.log("Traefik Image Pulled [OK]");
 	} catch (error) {
 		console.log("Traefik Image Not Found: Pulling ", error);
 	}
@@ -111,7 +111,7 @@ export const initializeStandaloneTraefik = async ({
 		await docker.createContainer(settings);
 		const newContainer = docker.getContainer(containerName);
 		await newContainer.start();
-		console.log("Traefik Started ✅");
+		console.log("Traefik Started [OK]");
 	} catch (error) {
 		console.log("Traefik Not Found: Starting ", error);
 	}
@@ -203,10 +203,10 @@ export const initializeTraefikService = async ({
 				ForceUpdate: inspect.Spec.TaskTemplate.ForceUpdate + 1,
 			},
 		});
-		console.log("Traefik Updated ✅");
+		console.log("Traefik Updated [OK]");
 	} catch {
 		await docker.createService(settings);
-		console.log("Traefik Started ✅");
+		console.log("Traefik Started [OK]");
 	}
 };
 

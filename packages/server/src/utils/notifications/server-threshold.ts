@@ -45,7 +45,7 @@ export const sendServerThresholdNotifications = async (
 		},
 	});
 
-	const typeEmoji = payload.Type === "CPU" ? "🔲" : "💾";
+	const typeEmoji = payload.Type === "CPU" ? "[BOX]" : "[SAVE]";
 	const typeColor = 0xff0000; // Rojo para indicar alerta
 
 	for (const notification of notificationList) {
@@ -57,21 +57,21 @@ export const sendServerThresholdNotifications = async (
 				`${discord.decoration ? decoration : ""} ${text}`.trim();
 
 			await sendDiscordNotification(discord, {
-				title: decorate(">", `\`⚠️\` Server ${payload.Type} Alert`),
+				title: decorate(">", `\`[WARN]\` Server ${payload.Type} Alert`),
 				color: typeColor,
 				fields: [
 					{
-						name: decorate("`🏷️`", "Server Name"),
+						name: decorate("`[TAG]`", "Server Name"),
 						value: payload.ServerName,
 						inline: true,
 					},
 					{
-						name: decorate("`📅`", "Date"),
+						name: decorate("`[DATE]`", "Date"),
 						value: `<t:${unixDate}:D>`,
 						inline: true,
 					},
 					{
-						name: decorate("`⌚`", "Time"),
+						name: decorate("`[TIME]`", "Time"),
 						value: `<t:${unixDate}:t>`,
 						inline: true,
 					},
@@ -81,17 +81,17 @@ export const sendServerThresholdNotifications = async (
 						inline: true,
 					},
 					{
-						name: decorate("📊", "Current Value"),
+						name: decorate("[CHART]", "Current Value"),
 						value: `${payload.Value.toFixed(2)}%`,
 						inline: true,
 					},
 					{
-						name: decorate("⚠️", "Threshold"),
+						name: decorate("[WARN]", "Threshold"),
 						value: `${payload.Threshold.toFixed(2)}%`,
 						inline: true,
 					},
 					{
-						name: decorate("`📜`", "Message"),
+						name: decorate("`[DOC]`", "Message"),
 						value: `\`\`\`${payload.Message}\`\`\``,
 					},
 				],
@@ -106,7 +106,7 @@ export const sendServerThresholdNotifications = async (
 			await sendTelegramNotification(
 				telegram,
 				`
-				<b>⚠️ Server ${payload.Type} Alert</b>
+				<b>[WARN] Server ${payload.Type} Alert</b>
                 <b>Server Name:</b> ${payload.ServerName}
 				<b>Type:</b> ${payload.Type}
 				<b>Current Value:</b> ${payload.Value.toFixed(2)}%
@@ -196,7 +196,7 @@ export const sendServerThresholdNotifications = async (
 					header: {
 						title: {
 							tag: "plain_text",
-							content: `⚠️ Server ${payload.Type} Alert`,
+							content: `[WARN] Server ${payload.Type} Alert`,
 						},
 						subtitle: {
 							tag: "plain_text",
@@ -244,7 +244,7 @@ export const sendServerThresholdNotifications = async (
 										elements: [
 											{
 												tag: "markdown",
-												content: `**Type:**\n${payload.Type === "CPU" ? "🔲" : "💾"} ${payload.Type}`,
+												content: `**Type:**\n${payload.Type === "CPU" ? "[BOX]" : "[SAVE]"} ${payload.Type}`,
 												text_align: "left",
 												text_size: "normal_v2",
 											},
@@ -282,7 +282,7 @@ export const sendServerThresholdNotifications = async (
 
 		if (teams) {
 			await sendTeamsNotification(teams, {
-				title: `⚠️ Server ${payload.Type} Alert`,
+				title: `[WARN] Server ${payload.Type} Alert`,
 				facts: [
 					{ name: "Server Name", value: payload.ServerName },
 					{ name: "Type", value: payload.Type },

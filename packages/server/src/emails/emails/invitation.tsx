@@ -73,7 +73,7 @@ export const InvitationEmail = ({
 								href={inviteLink}
 								className="bg-[#000000] rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
 							>
-								Join the team 🚀
+								Join the team [START]
 							</Button>
 						</Section>
 						<Text className="text-black text-[14px] leading-[24px]">

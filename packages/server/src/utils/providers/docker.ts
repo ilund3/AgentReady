@@ -14,7 +14,7 @@ echo "Pulling ${dockerImage}";
 		if (username && password) {
 			command += `
 if ! echo "${password}" | docker login --username "${username}" --password-stdin "${registryUrl || ""}" 2>&1; then
-	echo "❌ Login failed";
+	echo "[FAILED] Login failed";
 	exit 1;
 fi
 `;
@@ -22,11 +22,11 @@ fi
 
 		command += `
 docker pull ${dockerImage} 2>&1 || { 
-  echo "❌ Pulling image failed";
+  echo "[FAILED] Pulling image failed";
   exit 1;
 }
 
-echo "✅ Pulling image completed.";
+echo "[OK] Pulling image completed.";
 `;
 		return command;
 	} catch (error) {

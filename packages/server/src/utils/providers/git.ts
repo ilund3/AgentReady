@@ -34,7 +34,7 @@ export const cloneGitRepository = async ({
 	const { SSH_PATH, COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!serverId);
 
 	if (!customGitUrl || !customGitBranch) {
-		command += `echo "Error: ❌ Repository not found"; exit 1;`;
+		command += `echo "Error: [FAILED] Repository not found"; exit 1;`;
 		return command;
 	}
 
@@ -54,14 +54,14 @@ export const cloneGitRepository = async ({
 
 	if (!isHttpOrHttps(customGitUrl)) {
 		if (!customGitSSHKeyId) {
-			command += `echo "Error: ❌ You are trying to clone a ssh repository without a ssh key, please set a ssh key"; exit 1;`;
+			command += `echo "Error: [FAILED] You are trying to clone a ssh repository without a ssh key, please set a ssh key"; exit 1;`;
 			return command;
 		}
 		command += addHostToKnownHostsCommand(customGitUrl);
 	}
 	command += `rm -rf ${outputPath};`;
 	command += `mkdir -p ${outputPath};`;
-	command += `echo "Cloning Repo Custom ${customGitUrl} to ${outputPath}: ✅";`;
+	command += `echo "Cloning Repo Custom ${customGitUrl} to ${outputPath}: [OK]";`;
 
 	if (customGitSSHKeyId) {
 		await updateSSHKeyById({
@@ -79,7 +79,7 @@ export const cloneGitRepository = async ({
 		command += `export GIT_SSH_COMMAND="${gitSshCommand}";`;
 	}
 	command += `if ! git clone --branch ${customGitBranch} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} --progress ${customGitUrl} ${outputPath}; then
-				echo "❌ [ERROR] Fail to clone the repository ${customGitUrl}";
+				echo "[FAILED] [ERROR] Fail to clone the repository ${customGitUrl}";
 				exit 1;
 			fi
 			`;

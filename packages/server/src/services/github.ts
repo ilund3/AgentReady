@@ -85,13 +85,13 @@ export const getIssueComment = (
 ) => {
 	let statusMessage = "";
 	if (status === "success") {
-		statusMessage = "✅ Done";
+		statusMessage = "[OK] Done";
 	} else if (status === "error") {
-		statusMessage = "❌ Failed";
+		statusMessage = "[FAILED] Failed";
 	} else if (status === "initializing") {
-		statusMessage = "🔄 Building";
+		statusMessage = "[RELOAD] Building";
 	} else {
-		statusMessage = "🔄 Building";
+		statusMessage = "[RELOAD] Building";
 	}
 	const finished = `
 | Name       | Status       | Preview                             | Updated (UTC)         |
@@ -202,7 +202,7 @@ export const getSecurityBlockedMessage = (
 	repositoryName: string,
 	permission: string | null,
 ) => {
-	return `### 🚨 Preview Deployment Blocked - Security Protection
+	return `### [ALERT] Preview Deployment Blocked - Security Protection
 
 **Your pull request was blocked from triggering preview deployments**
 
@@ -221,14 +221,14 @@ Ask a repository maintainer to invite you as a collaborator with **write permiss
 Ask a repository administrator to disable security validation for this specific application if appropriate.
 
 #### For Repository Administrators:
-To disable this security check (⚠️ **not recommended for public repositories**):
+To disable this security check ([WARN] **not recommended for public repositories**):
 Enter to preview settings and disable the security check.
 
 ---
 *This security measure protects against malicious code execution in preview deployments. Only trusted collaborators should have the ability to trigger deployments.*
 
 <details>
-<summary>🛡️ Learn more about this security feature</summary>
+<summary>[SHIELD] Learn more about this security feature</summary>
 
 This protection prevents unauthorized users from:
 - Executing malicious code on the deployment server
@@ -268,14 +268,14 @@ export const hasExistingSecurityComment = async ({
 		// Check if any comment contains our security notification marker
 		const securityCommentExists = comments.some((comment) =>
 			comment.body?.includes(
-				"🚨 Preview Deployment Blocked - Security Protection",
+				"[ALERT] Preview Deployment Blocked - Security Protection",
 			),
 		);
 
 		return securityCommentExists;
 	} catch (error) {
 		console.error(
-			`❌ Failed to check existing comments on PR #${prNumber}:`,
+			`[FAILED] Failed to check existing comments on PR #${prNumber}:`,
 			error,
 		);
 		// If we can't check, assume no comment exists to avoid blocking functionality
@@ -312,7 +312,7 @@ export const createSecurityBlockedComment = async ({
 
 		if (commentExists) {
 			console.log(
-				`ℹ️  Security notification comment already exists on PR #${prNumber}, skipping duplicate`,
+				`[i]  Security notification comment already exists on PR #${prNumber}, skipping duplicate`,
 			);
 			return null;
 		}
@@ -334,12 +334,12 @@ export const createSecurityBlockedComment = async ({
 		});
 
 		console.log(
-			`✅ Security notification comment created on PR #${prNumber}: ${issue.data.html_url}`,
+			`[OK] Security notification comment created on PR #${prNumber}: ${issue.data.html_url}`,
 		);
 		return issue.data;
 	} catch (error) {
 		console.error(
-			`❌ Failed to create security comment on PR #${prNumber}:`,
+			`[FAILED] Failed to create security comment on PR #${prNumber}:`,
 			error,
 		);
 		// Don't throw error - security comment is nice-to-have, not critical

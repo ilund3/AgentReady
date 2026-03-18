@@ -109,41 +109,41 @@ export const sendBuildSuccessNotifications = async ({
 					`${discord.decoration ? decoration : ""} ${text}`.trim();
 
 				await sendDiscordNotification(discord, {
-					title: decorate(">", "`✅` Build Successes"),
+					title: decorate(">", "`[OK]` Build Successes"),
 					color: 0x57f287,
 					fields: [
 						{
-							name: decorate("`🛠️`", "Project"),
+							name: decorate("`[TOOL]`", "Project"),
 							value: projectName,
 							inline: true,
 						},
 						{
-							name: decorate("`⚙️`", "Application"),
+							name: decorate("`[GEAR]`", "Application"),
 							value: applicationName,
 							inline: true,
 						},
 						{
-							name: decorate("`🌍`", "Environment"),
+							name: decorate("`[WORLD]`", "Environment"),
 							value: environmentName,
 							inline: true,
 						},
 						{
-							name: decorate("`❔`", "Type"),
+							name: decorate("`[?]`", "Type"),
 							value: applicationType,
 							inline: true,
 						},
 						{
-							name: decorate("`📅`", "Date"),
+							name: decorate("`[DATE]`", "Date"),
 							value: `<t:${unixDate}:D>`,
 							inline: true,
 						},
 						{
-							name: decorate("`⌚`", "Time"),
+							name: decorate("`[TIME]`", "Time"),
 							value: `<t:${unixDate}:t>`,
 							inline: true,
 						},
 						{
-							name: decorate("`❓`", "Type"),
+							name: decorate("`[?]`", "Type"),
 							value: "Successful",
 							inline: true,
 						},
@@ -164,12 +164,12 @@ export const sendBuildSuccessNotifications = async ({
 					`${gotify.decoration ? decoration : ""} ${text}\n`;
 				await sendGotifyNotification(
 					gotify,
-					decorate("✅", "Build Success"),
-					`${decorate("🛠️", `Project: ${projectName}`)}` +
-						`${decorate("⚙️", `Application: ${applicationName}`)}` +
-						`${decorate("🌍", `Environment: ${environmentName}`)}` +
-						`${decorate("❔", `Type: ${applicationType}`)}` +
-						`${decorate("🕒", `Date: ${date.toLocaleString()}`)}` +
+					decorate("[OK]", "Build Success"),
+					`${decorate("[TOOL]", `Project: ${projectName}`)}` +
+						`${decorate("[GEAR]", `Application: ${applicationName}`)}` +
+						`${decorate("[WORLD]", `Environment: ${environmentName}`)}` +
+						`${decorate("[?]", `Type: ${applicationType}`)}` +
+						`${decorate("[CLOCK]", `Date: ${date.toLocaleString()}`)}` +
 						`${decorate("🔗", `Build details:\n${buildLink}`)}`,
 				);
 			}
@@ -180,11 +180,11 @@ export const sendBuildSuccessNotifications = async ({
 					"Build Success",
 					"white_check_mark",
 					`view, Build details, ${buildLink}, clear=true;`,
-					`🛠Project: ${projectName}\n` +
-						`⚙️Application: ${applicationName}\n` +
-						`🌍Environment: ${environmentName}\n` +
-						`❔Type: ${applicationType}\n` +
-						`🕒Date: ${date.toLocaleString()}`,
+					`[TOOL]Project: ${projectName}\n` +
+						`[GEAR]Application: ${applicationName}\n` +
+						`[WORLD]Environment: ${environmentName}\n` +
+						`[?]Type: ${applicationType}\n` +
+						`[CLOCK]Date: ${date.toLocaleString()}`,
 				);
 			}
 
@@ -211,7 +211,7 @@ export const sendBuildSuccessNotifications = async ({
 
 				await sendTelegramNotification(
 					telegram,
-					`<b>✅ Build Success</b>\n\n<b>Project:</b> ${projectName}\n<b>Application:</b> ${applicationName}\n<b>Environment:</b> ${environmentName}\n<b>Type:</b> ${applicationType}\n<b>Date:</b> ${format(
+					`<b>[OK] Build Success</b>\n\n<b>Project:</b> ${projectName}\n<b>Application:</b> ${applicationName}\n<b>Environment:</b> ${environmentName}\n<b>Type:</b> ${applicationType}\n<b>Date:</b> ${format(
 						date,
 						"PP",
 					)}\n<b>Time:</b> ${format(date, "pp")}`,
@@ -302,7 +302,7 @@ export const sendBuildSuccessNotifications = async ({
 						header: {
 							title: {
 								tag: "plain_text",
-								content: "✅ Build Success",
+								content: "[OK] Build Success",
 							},
 							subtitle: {
 								tag: "plain_text",
@@ -402,7 +402,7 @@ export const sendBuildSuccessNotifications = async ({
 
 			if (teams) {
 				await sendTeamsNotification(teams, {
-					title: "✅ Build Success",
+					title: "[OK] Build Success",
 					facts: [
 						{ name: "Project", value: projectName },
 						{ name: "Application", value: applicationName },

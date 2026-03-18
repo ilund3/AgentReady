@@ -22,7 +22,7 @@ export const initVolumeBackupsCronJobs = async () => {
 		for (const volumeBackup of volumeBackupsResult) {
 			scheduleVolumeBackup(volumeBackup.volumeBackupId);
 			console.log(
-				`Initialized volume backup: ${volumeBackup.name} ${volumeBackup.serviceType} ✅`,
+				`Initialized volume backup: ${volumeBackup.name} ${volumeBackup.serviceType} [OK]`,
 			);
 		}
 	} catch (error) {

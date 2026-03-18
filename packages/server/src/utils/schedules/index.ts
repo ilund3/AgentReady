@@ -19,7 +19,7 @@ export const initSchedules = async () => {
 		for (const schedule of schedulesResult) {
 			scheduleJob(schedule);
 			console.log(
-				`Initialized schedule: ${schedule.name} ${schedule.scheduleType} ✅`,
+				`Initialized schedule: ${schedule.name} ${schedule.scheduleType} [OK]`,
 			);
 		}
 	} catch (error) {

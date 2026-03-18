@@ -33,10 +33,10 @@ export const getHerokuCommand = (application: ApplicationNested) => {
 	const bashCommand = `
 echo "Starting heroku build..." ;
 ${command} || { 
-  echo "❌ Heroku build failed" ;
+  echo "[FAILED] Heroku build failed" ;
   exit 1;
 }
-echo "✅ Heroku build completed." ;
+echo "[OK] Heroku build completed." ;
 		`;
 
 	return bashCommand;

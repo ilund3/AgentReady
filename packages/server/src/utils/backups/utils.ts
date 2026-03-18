@@ -241,7 +241,7 @@ export const getBackupCommand = (
 	CONTAINER_ID=$(${containerSearch})
 
 	if [ -z "$CONTAINER_ID" ]; then
-		echo "[$(date)] ❌ Error: Container not found" >> ${logPath};
+		echo "[$(date)] [FAILED] Error: Container not found" >> ${logPath};
 		exit 1;
 	fi
 
@@ -249,22 +249,22 @@ export const getBackupCommand = (
 
 	# Run the backup command and capture the exit status
 	BACKUP_OUTPUT=$(${backupCommand} 2>&1 >/dev/null) || {
-		echo "[$(date)] ❌ Error: Backup failed" >> ${logPath};
+		echo "[$(date)] [FAILED] Error: Backup failed" >> ${logPath};
 		echo "Error: $BACKUP_OUTPUT" >> ${logPath};
 		exit 1;
 	}
 
-	echo "[$(date)] ✅ backup completed successfully" >> ${logPath};
+	echo "[$(date)] [OK] backup completed successfully" >> ${logPath};
 	echo "[$(date)] Starting upload to S3..." >> ${logPath};
 
 	# Run the upload command and capture the exit status
 	UPLOAD_OUTPUT=$(${backupCommand} | ${rcloneCommand} 2>&1 >/dev/null) || {
-		echo "[$(date)] ❌ Error: Upload to S3 failed" >> ${logPath};
+		echo "[$(date)] [FAILED] Error: Upload to S3 failed" >> ${logPath};
 		echo "Error: $UPLOAD_OUTPUT" >> ${logPath};
 		exit 1;
 	}
 
-	echo "[$(date)] ✅ Upload to S3 completed successfully" >> ${logPath};
-	echo "Backup done ✅" >> ${logPath};
+	echo "[$(date)] [OK] Upload to S3 completed successfully" >> ${logPath};
+	echo "Backup done [OK]" >> ${logPath};
 	`;
 };

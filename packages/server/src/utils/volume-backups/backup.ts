@@ -51,13 +51,13 @@ export const backupVolume = async (
   -v ${volumeBackupPath}:/backup \
   ubuntu \
   bash -c "cd /volume_data && tar cvf /backup/${backupFileName} ."
-  echo "Volume backup done ✅"
+  echo "Volume backup done [OK]"
   echo "Starting upload to S3..."
   ${rcloneCommand}
-  echo "Upload to S3 done ✅"
+  echo "Upload to S3 done [OK]"
   echo "Cleaning up local backup file..."
   rm "${volumeBackupPath}/${backupFileName}"
-  echo "Local backup file cleaned up ✅"
+  echo "Local backup file cleaned up [OK]"
   `;
 
 	if (!turnOff) {

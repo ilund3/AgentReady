@@ -42,7 +42,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 			);
 
 			if (!containerId) {
-				writeStream.write("Postgres container not found❌\n");
+				writeStream.write("Postgres container not found[FAILED]\n");
 				writeStream.end();
 				throw new Error("Postgres container not found");
 			}
@@ -82,7 +82,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 			const uploadCommand = `rclone copyto ${rcloneFlags.join(" ")} "${tempDir}/${backupFileName}" "${s3Path}"`;
 			writeStream.write("Running command to upload backup to S3\n");
 			await execAsync(uploadCommand);
-			writeStream.write("Uploaded backup to S3 ✅\n");
+			writeStream.write("Uploaded backup to S3 [OK]\n");
 			writeStream.end();
 			await updateDeploymentStatus(deployment.deploymentId, "done");
 			return true;
@@ -95,7 +95,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 		}
 	} catch (error) {
 		console.error("Backup error:", error);
-		writeStream.write("Backup error❌\n");
+		writeStream.write("Backup error[FAILED]\n");
 		writeStream.write(
 			error instanceof Error ? error.message : "Unknown error\n",
 		);

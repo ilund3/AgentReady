@@ -40,7 +40,7 @@ export const VolumeBackupEmail = ({
 	backupSize,
 	date = "2023-05-01T00:00:00.000Z",
 }: TemplateProps) => {
-	const previewText = `Volume backup for ${applicationName} was ${type === "success" ? "successful ✅" : "failed ❌"}`;
+	const previewText = `Volume backup for ${applicationName} was ${type === "success" ? "successful [OK]" : "failed [FAILED]"}`;
 	return (
 		<Html>
 			<Preview>{previewText}</Preview>
@@ -79,8 +79,8 @@ export const VolumeBackupEmail = ({
 						<Text className="text-black text-[14px] leading-[24px]">
 							Your volume backup for <strong>{applicationName}</strong> was{" "}
 							{type === "success"
-								? "successful ✅"
-								: "failed. Please check the error message below. ❌"}
+								? "successful [OK]"
+								: "failed. Please check the error message below. [FAILED]"}
 							.
 						</Text>
 						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#F4F4F5] rounded-lg p-2">

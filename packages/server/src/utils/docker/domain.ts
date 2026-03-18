@@ -116,7 +116,7 @@ export const writeDomainsToCompose = async (
 
 		if (!composeConverted) {
 			return `
-echo "❌ Error: Compose file not found";
+echo "[FAILED] Error: Compose file not found";
 exit 1;
 			`;
 		}
@@ -126,7 +126,7 @@ exit 1;
 		return `echo "${encodedContent}" | base64 -d > "${path}";`;
 	} catch (error) {
 		// @ts-ignore
-		return `echo "❌ Has occurred an error: ${error?.message || error}";
+		return `echo "[FAILED] Has occurred an error: ${error?.message || error}";
 exit 1;
 		`;
 	}

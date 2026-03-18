@@ -128,7 +128,7 @@ export const cloneGitlabRepository = async ({
 	const { COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!serverId);
 
 	if (!gitlabId) {
-		command += `echo "Error: ❌ Gitlab Provider not found"; exit 1;`;
+		command += `echo "Error: [FAILED] Gitlab Provider not found"; exit 1;`;
 		return command;
 	}
 
@@ -139,7 +139,7 @@ export const cloneGitlabRepository = async ({
 
 	// Check if requirements are met
 	if (requirements.length > 0) {
-		command += `echo "❌ [ERROR] GitLab Repository configuration failed for application: ${appName}"; echo "Reasons:"; echo "${requirements.join("\n")}"; exit 1;`;
+		command += `echo "[FAILED] [ERROR] GitLab Repository configuration failed for application: ${appName}"; echo "Reasons:"; echo "${requirements.join("\n")}"; exit 1;`;
 		return command;
 	}
 
@@ -149,7 +149,7 @@ export const cloneGitlabRepository = async ({
 	command += `mkdir -p ${outputPath};`;
 	const repoClone = getGitlabRepoClone(gitlab, gitlabPathNamespace);
 	const cloneUrl = getGitlabCloneUrl(gitlab, repoClone);
-	command += `echo "Cloning Repo ${repoClone} to ${outputPath}: ✅";`;
+	command += `echo "Cloning Repo ${repoClone} to ${outputPath}: [OK]";`;
 	command += `git clone --branch ${gitlabBranch} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} ${cloneUrl} ${outputPath} --progress;`;
 	return command;
 };

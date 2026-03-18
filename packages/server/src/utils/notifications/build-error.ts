@@ -108,41 +108,41 @@ export const sendBuildErrorNotifications = async ({
 				const limitCharacter = 800;
 				const truncatedErrorMessage = errorMessage.substring(0, limitCharacter);
 				await sendDiscordNotification(discord, {
-					title: decorate(">", "`⚠️` Build Failed"),
+					title: decorate(">", "`[WARN]` Build Failed"),
 					color: 0xed4245,
 					fields: [
 						{
-							name: decorate("`🛠️`", "Project"),
+							name: decorate("`[TOOL]`", "Project"),
 							value: projectName,
 							inline: true,
 						},
 						{
-							name: decorate("`⚙️`", "Application"),
+							name: decorate("`[GEAR]`", "Application"),
 							value: applicationName,
 							inline: true,
 						},
 						{
-							name: decorate("`❔`", "Type"),
+							name: decorate("`[?]`", "Type"),
 							value: applicationType,
 							inline: true,
 						},
 						{
-							name: decorate("`📅`", "Date"),
+							name: decorate("`[DATE]`", "Date"),
 							value: `<t:${unixDate}:D>`,
 							inline: true,
 						},
 						{
-							name: decorate("`⌚`", "Time"),
+							name: decorate("`[TIME]`", "Time"),
 							value: `<t:${unixDate}:t>`,
 							inline: true,
 						},
 						{
-							name: decorate("`❓`", "Type"),
+							name: decorate("`[?]`", "Type"),
 							value: "Failed",
 							inline: true,
 						},
 						{
-							name: decorate("`⚠️`", "Error Message"),
+							name: decorate("`[WARN]`", "Error Message"),
 							value: `\`\`\`${truncatedErrorMessage}\`\`\``,
 						},
 						{
@@ -162,12 +162,12 @@ export const sendBuildErrorNotifications = async ({
 					`${gotify.decoration ? decoration : ""} ${text}\n`;
 				await sendGotifyNotification(
 					gotify,
-					decorate("⚠️", "Build Failed"),
-					`${decorate("🛠️", `Project: ${projectName}`)}` +
-						`${decorate("⚙️", `Application: ${applicationName}`)}` +
-						`${decorate("❔", `Type: ${applicationType}`)}` +
-						`${decorate("🕒", `Date: ${date.toLocaleString()}`)}` +
-						`${decorate("⚠️", `Error:\n${errorMessage}`)}` +
+					decorate("[WARN]", "Build Failed"),
+					`${decorate("[TOOL]", `Project: ${projectName}`)}` +
+						`${decorate("[GEAR]", `Application: ${applicationName}`)}` +
+						`${decorate("[?]", `Type: ${applicationType}`)}` +
+						`${decorate("[CLOCK]", `Date: ${date.toLocaleString()}`)}` +
+						`${decorate("[WARN]", `Error:\n${errorMessage}`)}` +
 						`${decorate("🔗", `Build details:\n${buildLink}`)}`,
 				);
 			}
@@ -178,11 +178,11 @@ export const sendBuildErrorNotifications = async ({
 					"Build Failed",
 					"warning",
 					`view, Build details, ${buildLink}, clear=true;`,
-					`🛠️Project: ${projectName}\n` +
-						`⚙️Application: ${applicationName}\n` +
-						`❔Type: ${applicationType}\n` +
-						`🕒Date: ${date.toLocaleString()}\n` +
-						`⚠️Error:\n${errorMessage}`,
+					`[TOOL]Project: ${projectName}\n` +
+						`[GEAR]Application: ${applicationName}\n` +
+						`[?]Type: ${applicationType}\n` +
+						`[CLOCK]Date: ${date.toLocaleString()}\n` +
+						`[WARN]Error:\n${errorMessage}`,
 				);
 			}
 
@@ -198,7 +198,7 @@ export const sendBuildErrorNotifications = async ({
 
 				await sendTelegramNotification(
 					telegram,
-					`<b>⚠️ Build Failed</b>\n\n<b>Project:</b> ${projectName}\n<b>Application:</b> ${applicationName}\n<b>Type:</b> ${applicationType}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}\n\n<b>Error:</b>\n<pre>${errorMessage}</pre>`,
+					`<b>[WARN] Build Failed</b>\n\n<b>Project:</b> ${projectName}\n<b>Application:</b> ${applicationName}\n<b>Type:</b> ${applicationType}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}\n\n<b>Error:</b>\n<pre>${errorMessage}</pre>`,
 					inlineButton,
 				);
 			}
@@ -288,7 +288,7 @@ export const sendBuildErrorNotifications = async ({
 						header: {
 							title: {
 								tag: "plain_text",
-								content: "⚠️ Build Failed",
+								content: "[WARN] Build Failed",
 							},
 							subtitle: {
 								tag: "plain_text",
@@ -390,7 +390,7 @@ export const sendBuildErrorNotifications = async ({
 				const limitCharacter = 800;
 				const truncatedErrorMessage = errorMessage.substring(0, limitCharacter);
 				await sendTeamsNotification(teams, {
-					title: "⚠️ Build Failed",
+					title: "[WARN] Build Failed",
 					facts: [
 						{ name: "Project", value: projectName },
 						{ name: "Application", value: applicationName },

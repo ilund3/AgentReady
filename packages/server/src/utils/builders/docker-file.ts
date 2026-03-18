@@ -87,15 +87,15 @@ export const getDockerCommand = (application: ApplicationNested) => {
 		command += `
 echo "Building ${appName}" ;
 cd ${dockerContextPath} || { 
-  echo "❌ The path ${dockerContextPath} does not exist" ;
+  echo "[FAILED] The path ${dockerContextPath} does not exist" ;
   exit 1;
 }
 
 ${joinedSecrets} docker ${commandArgs.join(" ")} || { 
-  echo "❌ Docker build failed" ;
+  echo "[FAILED] Docker build failed" ;
   exit 1;
 }
-echo "✅ Docker build completed." ;
+echo "[OK] Docker build completed." ;
 		`;
 
 		return command;

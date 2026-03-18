@@ -108,13 +108,13 @@ export const cloneBitbucketRepository = async ({
 	const { COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!serverId);
 
 	if (!bitbucketId) {
-		command += `echo "Error: ❌ Bitbucket Provider not found"; exit 1;`;
+		command += `echo "Error: [FAILED] Bitbucket Provider not found"; exit 1;`;
 		return command;
 	}
 	const bitbucket = await findBitbucketById(bitbucketId);
 
 	if (!bitbucket) {
-		command += `echo "Error: ❌ Bitbucket Provider not found"; exit 1;`;
+		command += `echo "Error: [FAILED] Bitbucket Provider not found"; exit 1;`;
 		return command;
 	}
 	const basePath = type === "compose" ? COMPOSE_PATH : APPLICATIONS_PATH;
@@ -124,7 +124,7 @@ export const cloneBitbucketRepository = async ({
 	const repoToUse = entity.bitbucketRepositorySlug || bitbucketRepository;
 	const repoclone = `bitbucket.org/${bitbucketOwner}/${repoToUse}.git`;
 	const cloneUrl = getBitbucketCloneUrl(bitbucket, repoclone);
-	command += `echo "Cloning Repo ${repoclone} to ${outputPath}: ✅";`;
+	command += `echo "Cloning Repo ${repoclone} to ${outputPath}: [OK]";`;
 	command += `git clone --branch ${bitbucketBranch} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} ${cloneUrl} ${outputPath} --progress;`;
 	return command;
 };

@@ -93,21 +93,21 @@ docker buildx use builder-containerd
 
 echo "Preparing Railpack build plan..." ;
 railpack ${prepareArgs.join(" ")} || { 
-	echo "❌ Railpack prepare failed" ;
+	echo "[FAILED] Railpack prepare failed" ;
 	docker buildx rm builder-containerd || true
 	exit 1;
 }
-echo "✅ Railpack prepare completed." ;
+echo "[OK] Railpack prepare completed." ;
 
 echo "Building with Railpack frontend..." ;
 # Export environment variables for secrets
 ${exportEnvs.join("\n")}
 docker ${buildArgs.join(" ")} || { 
-	echo "❌ Railpack build failed" ;
+	echo "[FAILED] Railpack build failed" ;
 	docker buildx rm builder-containerd || true
 	exit 1;
 }
-echo "✅ Railpack build completed." ;
+echo "[OK] Railpack build completed." ;
 docker buildx rm builder-containerd
 `;
 

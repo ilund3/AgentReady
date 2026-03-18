@@ -79,10 +79,10 @@ export const runCommand = async (scheduleId: string) => {
 					set -e
 					echo "Running command: docker exec ${containerId} ${shellType} -c '${command}'" >> ${deployment.logPath};
 					docker exec ${containerId} ${shellType} -c '${command}' >> ${deployment.logPath} 2>> ${deployment.logPath} || { 
-						echo "❌ Command failed" >> ${deployment.logPath};
+						echo "[FAILED] Command failed" >> ${deployment.logPath};
 						exit 1;
 					}
-					echo "✅ Command executed successfully" >> ${deployment.logPath};
+					echo "[OK] Command executed successfully" >> ${deployment.logPath};
 					`,
 				);
 			} catch (error) {
@@ -113,9 +113,9 @@ export const runCommand = async (scheduleId: string) => {
 					},
 				);
 
-				writeStream.write("✅ Command executed successfully\n");
+				writeStream.write("[OK] Command executed successfully\n");
 			} catch (error) {
-				writeStream.write("❌ Command failed\n");
+				writeStream.write("[FAILED] Command failed\n");
 				writeStream.write(
 					error instanceof Error ? error.message : "Unknown error",
 				);
@@ -162,10 +162,10 @@ export const runCommand = async (scheduleId: string) => {
 				set -e
 				echo "Running script" >> ${deployment.logPath};
 				bash -c ${fullPath}/script.sh 2>&1 | tee -a ${deployment.logPath} || { 
-					echo "❌ Command failed" >> ${deployment.logPath};
+					echo "[FAILED] Command failed" >> ${deployment.logPath};
 					exit 1;
 				  }
-				echo "✅ Command executed successfully" >> ${deployment.logPath};
+				echo "[OK] Command executed successfully" >> ${deployment.logPath};
 			`;
 			await execAsyncRemote(serverId, command, async (data) => {
 				// we need to extract the PID and Schedule ID from the data

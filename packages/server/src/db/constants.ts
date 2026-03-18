@@ -28,7 +28,7 @@ if (DATABASE_URL) {
 } else {
 	if (process.env.NODE_ENV !== "test") {
 		console.warn(`
-		⚠️  [DEPRECATED DATABASE CONFIG]
+		[WARN]  [DEPRECATED DATABASE CONFIG]
 		You are using the legacy hardcoded database credentials.
 		This mode WILL BE REMOVED in a future release.
 		

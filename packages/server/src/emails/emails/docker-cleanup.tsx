@@ -58,7 +58,7 @@ export const DockerCleanupEmail = ({
 							Hello,
 						</Text>
 						<Text className="text-black text-[14px] leading-[24px]">
-							The docker cleanup for <strong>AgentReady</strong> was successful ✅
+							The docker cleanup for <strong>AgentReady</strong> was successful [OK]
 						</Text>
 
 						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#F4F4F5] rounded-lg p-2">

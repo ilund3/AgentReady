@@ -151,7 +151,7 @@ export const cloneGiteaRepository = async ({
 	const { APPLICATIONS_PATH, COMPOSE_PATH } = paths(!!serverId);
 
 	if (!giteaId) {
-		command += `echo "Error: ❌ Gitea Provider not found"; exit 1;`;
+		command += `echo "Error: [FAILED] Gitea Provider not found"; exit 1;`;
 		return command;
 	}
 
@@ -159,7 +159,7 @@ export const cloneGiteaRepository = async ({
 	const giteaProvider = await findGiteaById(giteaId);
 
 	if (!giteaProvider) {
-		command += `echo "❌ [ERROR] Gitea provider not found in the database"; exit 1;`;
+		command += `echo "[FAILED] [ERROR] Gitea provider not found in the database"; exit 1;`;
 		return command;
 	}
 
@@ -176,7 +176,7 @@ export const cloneGiteaRepository = async ({
 		giteaRepository!,
 	);
 
-	command += `echo "Cloning Repo ${repoClone} to ${outputPath}: ✅";`;
+	command += `echo "Cloning Repo ${repoClone} to ${outputPath}: [OK]";`;
 	command += `git clone --branch ${giteaBranch} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} ${cloneUrl} ${outputPath} --progress;`;
 	return command;
 };

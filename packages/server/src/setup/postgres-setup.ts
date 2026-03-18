@@ -54,7 +54,7 @@ export const initializePostgres = async () => {
 			version: Number.parseInt(inspect.Version.Index),
 			...settings,
 		});
-		console.log("Postgres Started ✅");
+		console.log("Postgres Started [OK]");
 	} catch (_) {
 		try {
 			await docker.createService(settings);
@@ -64,6 +64,6 @@ export const initializePostgres = async () => {
 			}
 			console.log("Postgres service already exists, continuing...");
 		}
-		console.log("Postgres Not Found: Starting ✅");
+		console.log("Postgres Not Found: Starting [OK]");
 	}
 };

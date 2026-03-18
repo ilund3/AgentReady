@@ -151,7 +151,7 @@ export const serverValidate = async (serverId: string) => {
 				if (err.level === "client-authentication") {
 					reject(
 						new Error(
-							`Authentication failed: Invalid SSH private key. ❌ Error: ${err.message} ${err.level}`,
+							`Authentication failed: Invalid SSH private key. [FAILED] Error: ${err.message} ${err.level}`,
 						),
 					);
 				} else {

@@ -24,22 +24,22 @@ export const uploadImageRemoteCommand = async (
 	if (registry) {
 		const registryTag = getRegistryTag(registry, imageName);
 		if (registryTag) {
-			commands.push(`echo "📦 [Enabled Registry Swarm]"`);
+			commands.push(`echo "[PKG] [Enabled Registry Swarm]"`);
 			commands.push(getRegistryCommands(registry, imageName, registryTag));
 		}
 	}
 	if (buildRegistry) {
 		const buildRegistryTag = getRegistryTag(buildRegistry, imageName);
 		if (buildRegistryTag) {
-			commands.push(`echo "🔑 [Enabled Build Registry]"`);
+			commands.push(`echo "[KEY] [Enabled Build Registry]"`);
 			commands.push(
 				getRegistryCommands(buildRegistry, imageName, buildRegistryTag),
 			);
 			commands.push(
-				`echo "⚠️ INFO: After the build is finished, you need to wait a few seconds for the server to download the image and run the container."`,
+				`echo "[WARN] INFO: After the build is finished, you need to wait a few seconds for the server to download the image and run the container."`,
 			);
 			commands.push(
-				`echo "📊 Check the Logs tab to see when the container starts running."`,
+				`echo "[CHART] Check the Logs tab to see when the container starts running."`,
 			);
 		}
 	}
@@ -62,7 +62,7 @@ export const uploadImageRemoteCommand = async (
 			rollback?.image || "",
 		);
 		if (rollbackRegistryTag) {
-			commands.push(`echo "🔄 [Enabled Rollback Registry]"`);
+			commands.push(`echo "[RELOAD] [Enabled Rollback Registry]"`);
 			commands.push(
 				getRegistryCommands(rollbackRegistry, imageName, rollbackRegistryTag),
 			);
@@ -116,21 +116,21 @@ const getRegistryCommands = (
 	registryTag: string,
 ): string => {
 	return `
-echo "📦 [Enabled Registry] Uploading image to '${registry.registryType}' | '${registryTag}'" ;
+echo "[PKG] [Enabled Registry] Uploading image to '${registry.registryType}' | '${registryTag}'" ;
 echo "${registry.password}" | docker login ${registry.registryUrl} -u '${registry.username}' --password-stdin || { 
-	echo "❌ DockerHub Failed" ;
+	echo "[FAILED] DockerHub Failed" ;
 	exit 1;
 }
-echo "✅ Registry Login Success" ;
+echo "[OK] Registry Login Success" ;
 docker tag ${imageName} ${registryTag} || { 
-	echo "❌ Error tagging image" ;
+	echo "[FAILED] Error tagging image" ;
 	exit 1;
 }
-echo "✅ Image Tagged" ;
+echo "[OK] Image Tagged" ;
 docker push ${registryTag} || { 
-	echo "❌ Error pushing image" ;
+	echo "[FAILED] Error pushing image" ;
 	exit 1;
 }
-	echo "✅ Image Pushed" ;
+	echo "[OK] Image Pushed" ;
 `;
 };

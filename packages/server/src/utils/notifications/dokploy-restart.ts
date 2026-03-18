@@ -82,21 +82,21 @@ export const sendServerRestartNotifications = async () => {
 						`${discord.decoration ? decoration : ""} ${text}`.trim();
 
 					await sendDiscordNotification(discord, {
-						title: decorate(">", "`✅` AgentReady Server Restarted"),
+						title: decorate(">", "`[OK]` AgentReady Server Restarted"),
 						color: 0x57f287,
 						fields: [
 							{
-								name: decorate("`📅`", "Date"),
+								name: decorate("`[DATE]`", "Date"),
 								value: `<t:${unixDate}:D>`,
 								inline: true,
 							},
 							{
-								name: decorate("`⌚`", "Time"),
+								name: decorate("`[TIME]`", "Time"),
 								value: `<t:${unixDate}:t>`,
 								inline: true,
 							},
 							{
-								name: decorate("`❓`", "Type"),
+								name: decorate("`[?]`", "Type"),
 								value: "Successful",
 								inline: true,
 							},
@@ -113,8 +113,8 @@ export const sendServerRestartNotifications = async () => {
 						`${gotify.decoration ? decoration : ""} ${text}\n`;
 					await sendGotifyNotification(
 						gotify,
-						decorate("✅", "AgentReady Server Restarted"),
-						`${decorate("🕒", `Date: ${date.toLocaleString()}`)}`,
+						decorate("[OK]", "AgentReady Server Restarted"),
+						`${decorate("[CLOCK]", `Date: ${date.toLocaleString()}`)}`,
 					);
 				}
 
@@ -124,14 +124,14 @@ export const sendServerRestartNotifications = async () => {
 						"AgentReady Server Restarted",
 						"white_check_mark",
 						"",
-						`🕒Date: ${date.toLocaleString()}`,
+						`[CLOCK]Date: ${date.toLocaleString()}`,
 					);
 				}
 
 				if (telegram) {
 					await sendTelegramNotification(
 						telegram,
-						`<b>✅ AgentReady Server Restarted</b>\n\n<b>Date:</b> ${format(
+						`<b>[OK] AgentReady Server Restarted</b>\n\n<b>Date:</b> ${format(
 							date,
 							"PP",
 						)}\n<b>Time:</b> ${format(date, "pp")}`,
@@ -193,7 +193,7 @@ export const sendServerRestartNotifications = async () => {
 							header: {
 								title: {
 									tag: "plain_text",
-									content: "✅ AgentReady Server Restarted",
+									content: "[OK] AgentReady Server Restarted",
 								},
 								subtitle: {
 									tag: "plain_text",
@@ -258,7 +258,7 @@ export const sendServerRestartNotifications = async () => {
 
 				if (teams) {
 					await sendTeamsNotification(teams, {
-						title: "✅ AgentReady Server Restarted",
+						title: "[OK] AgentReady Server Restarted",
 						facts: [
 							{ name: "Status", value: "Successful" },
 							{ name: "Restart Time", value: format(date, "PP pp") },
